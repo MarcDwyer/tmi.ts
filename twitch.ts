@@ -2,12 +2,16 @@ import {
   WebSocket,
 } from "https://deno.land/x/websocket/mod.ts";
 import Channel from "./channel.ts";
-import { IrcUrl } from "./twitch_data.ts";
+import { IrcUrl, TokenResponse, TwitchCreds } from "./twitch_data.ts";
 import { red } from "https://deno.land/std@0.64.0/fmt/colors.ts";
+import { getOAuth } from "./util.ts";
+
 class TwitchChat {
   ws: WebSocket | null = null;
+  tokenData: null | TokenResponse = null;
+  constructor(private twitchCred: TwitchCreds) {}
 
-  async connect(oauth: string, userName: string) {
+  async connect() {
     return new Promise((res, rej) => {
       const ws = new WebSocket(IrcUrl);
       ws.on("message", (msg: string) => console.log(msg));
@@ -17,10 +21,14 @@ class TwitchChat {
         ws.send("PONG");
       });
       ws.on("open", async () => {
-        console.log({ oauth, userName });
         try {
-          await ws.send(`PASS oauth:${oauth}`);
-          await ws.send(`NICK ${userName}`);
+          const token: TokenResponse = await getOAuth(this.twitchCred);
+          console.log({ token, cred: this.twitchCred });
+          await ws.send(
+            `PASS oauth:${this.twitchCred.oauth}`,
+          );
+          await ws.send(`NICK ${this.twitchCred.userName}`);
+          this.tokenData = token;
           this.ws = ws;
           res();
         } catch (err) {

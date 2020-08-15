@@ -1,4 +1,5 @@
-import { red } from "https://deno.land/std@0.64.0/fmt/colors.ts";
+import { TwitchCreds } from "./twitch_data.ts";
+import { TokenResponse } from "./twitch_data.ts";
 export function deferred(): {
   promise: Promise<{}>;
   resolve: (value?: {} | PromiseLike<{}>) => void;
@@ -19,22 +20,15 @@ export function deferred(): {
   };
 }
 
-export type TwitchCreds = {
-  clientId: string;
-  clientSecret: string;
-};
-export function tokenUrl({ clientId, clientSecret }: TwitchCreds) {
+export async function getOAuth(
+  { clientSecret, clientId }: TwitchCreds,
+  //@ts-ignore
+): Promise<TokenResponse> {
   const url =
     `https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`;
-  return url;
-}
-export async function getToken(creds: TwitchCreds) {
   try {
-    const url = tokenUrl(creds);
-    console.log(url);
     const f = await fetch(url, { method: "POST" });
-    const token = await f.json();
-
+    const token: TokenResponse = await f.json();
     return token;
   } catch (err) {
     console.log(err);
