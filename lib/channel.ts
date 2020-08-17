@@ -1,4 +1,4 @@
-import TwitchChat from "./twitch_chat.ts";
+import { TwitchChat } from "./twitch_chat.ts";
 
 class Channel {
   isConnected: boolean = true;
