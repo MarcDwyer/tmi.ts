@@ -13,7 +13,7 @@ export type PrivateMsg = {
   chatMsg: string;
   chanName: string;
 };
-export function handlePrivMsg(msg: string) {
+export function handlePrivMsg(msg: string): PrivateMsg {
   const message = msg.split("");
   if (message[0] === ":") message.shift();
   let userName = "";

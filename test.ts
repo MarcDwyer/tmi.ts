@@ -1,5 +1,5 @@
-import TwitchChat from "./lib/twitch.ts";
-import { IrcUrl } from "./lib/twitch_data.ts";
+import { TwitchChat } from "./mod.ts";
+import { IrcUrl } from "./mod.ts";
 import { red } from "https://deno.land/std/fmt/colors.ts";
 
 export const endpoint = IrcUrl,
@@ -16,8 +16,10 @@ const tc = new TwitchChat(
 
 try {
   await tc.connect();
-  const c = await tc.joinChannel("grubtruckers");
-  await c.sendMsg("Im a professional vaper VapeNation");
+  const c = await tc.joinChannel("maya");
+  await c.sendMsg(
+    `@${c.ownerDisplayName} does this live`,
+  );
 } catch (err) {
   console.log(red(err));
 }
