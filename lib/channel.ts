@@ -22,9 +22,9 @@ class Channel {
       if (ws.isClosed) {
         throw "WebSocket connection has been closed";
       }
-      await ws.send(`PART #${this.chanName}`);
       this.tc.channels.delete(this.chanName);
       this.isConnected = false;
+      await ws.send(`PART #${this.chanName}`);
     } catch (err) {
       console.log(err);
     }
