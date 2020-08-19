@@ -19,9 +19,7 @@ const channel = await tc.joinChannel("xqc");
 for await (const { msg } of channel) {
   // do something with msg here
   if (msg.directMsg) {
-    console.log(
-      `${msg.userName} has direct messaged you! Saying: ${msg.chatMsg}`
-    );
+    channel.sendMsg(`@${msg.userName} hey whats up! Poggies!`);
   }
 }
 
