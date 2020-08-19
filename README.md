@@ -13,25 +13,33 @@ import { TwitchChat } from "./mod.ts";
 
 const tc = new TwitchChat({ userName, clientId, clientSecret, oauth });
 
-await tc.connect();
 const channel = await tc.joinChannel("xqc");
-await channel.sendMsg("This stream is pepperSpray PogChampions");
-await channel.part();
-// or
 
-const channels: string[] = ["xqc", "ninja", "sodaPoppin"];
+// Listen to the channels messages
+for await (const { msg } of channel) {
+  // do something with msg here
+  if (msg.directMsg) {
+    console.log(
+      `${msg.userName} has direct messaged you! Saying: ${msg.chatMsg}`
+    );
+  }
+}
+
+// OR
+// Listen to multiple channels
 
 await tc.connect();
-await Promise.all(
-  channels.map(async (chanName) => {
-    const channel = await tc.joinChannel(chanName);
-    await channel.sendMsg("wow this stream is Poggers");
-  })
-);
-// tc.channels === Map<chanName, Channel>()
-for (const channel of tc.channels.values()) {
-  await channel.sendMsg(
-    "I can also say PogChampions to all connected channels, Poggies!"
-  );
-}
+
+const channels: string[] = ["xqc", "sodapoppin", "ninja"];
+
+const listener = async () => {
+  for (const channel of channels) {
+    const connChan = await tc.joinChannel(channel);
+    for await (const { msg } of connChan) {
+      // do something with msg here
+    }
+  }
+};
+
+listener();
 ```

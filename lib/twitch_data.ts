@@ -22,3 +22,15 @@ export enum MsgTypes {
 
 type KeysOfMsgTypes = keyof typeof MsgTypes;
 export type TMsgTypes = typeof MsgTypes[KeysOfMsgTypes];
+
+export type TwitchMessage = {
+  type: TMsgTypes;
+  msg: PrivateMsg;
+};
+
+export type PrivateMsg = {
+  userName: string;
+  chatMsg: string;
+  chanName: string;
+  directMsg: boolean;
+};

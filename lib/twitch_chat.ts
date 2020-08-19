@@ -16,11 +16,11 @@ export class TwitchChat {
       const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", (msg: string) => {
         if (isPrivMsg(msg)) {
-          const pmsg = handlePrivMsg(msg);
+          const pmsg = handlePrivMsg(msg, this.twitchCred.userName);
           if (this.channels.has(pmsg.chanName)) {
             const c = this.channels.get(pmsg.chanName);
+            c?.messages.push({ type: MsgTypes.privMsg, msg: pmsg });
             c?.signal.resolve();
-            c?.[Symbol.asyncIterator](pmsg.chatMsg);
           }
         }
       });

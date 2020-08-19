@@ -1,14 +1,14 @@
 import { TwitchChat } from "./twitch_chat.ts";
-import { TMsgTypes, MsgTypes } from "./twitch_data.ts";
+import { TwitchMessage } from "./twitch_data.ts";
 import {
   deferred,
   Deferred,
 } from "https://deno.land/std@0.64.0/async/deferred.ts";
 
 class Channel {
-  isConnected: boolean = true;
+  private isConnected: boolean = true;
   signal: Deferred<void> = deferred();
-  private messages: any[] = [];
+  messages: TwitchMessage[] = [];
 
   constructor(private chanName: string, private tc: TwitchChat) {}
 
@@ -27,26 +27,26 @@ class Channel {
       }
       this.tc.channels.delete(this.chanName);
       this.isConnected = false;
+      console.log(`parted ${this.chanName}`);
       await ws.send(`PART #${this.chanName}`);
     } catch (err) {
       console.log(err);
     }
   }
-  get ownerDisplayName() {
+  get channelOwnerName() {
     return this.chanName.slice(1, this.chanName.length);
   }
-  async *msgIterator() {
-    while (this.tc.channels.has(this.chanName)) {
+  private async *msgIterator() {
+    while (this.isConnected) {
       await this.signal;
       for (const msg of this.messages) {
-        yield msg;
+        if (msg) yield msg;
       }
-      this.messages = [];
+      this.messages.length = 0;
       this.signal = deferred();
     }
   }
-  [Symbol.asyncIterator](msg: string): AsyncIterableIterator<string> {
-    this.messages.push(msg);
+  [Symbol.asyncIterator](): AsyncIterableIterator<TwitchMessage> {
     return this.msgIterator();
   }
 }

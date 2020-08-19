@@ -1,19 +1,12 @@
-export enum MessageTypes {
-  privMsg = "PRIVMSG",
-}
+import { MsgTypes, PrivateMsg } from "./twitch_data.ts";
 
 export function isPrivMsg(msg: string) {
-  return msg.includes(MessageTypes.privMsg);
+  return msg.includes(MsgTypes.privMsg);
 }
 //        displayName       address                 msgType channel actualMsg
 // msg -- :sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSG #maya :the scrollwheel to jump
 
-export type PrivateMsg = {
-  userName: string;
-  chatMsg: string;
-  chanName: string;
-};
-export function handlePrivMsg(msg: string): PrivateMsg {
+export function handlePrivMsg(msg: string, displayName: string): PrivateMsg {
   const message = msg.split("");
   if (message[0] === ":") message.shift();
   let userName = "";
@@ -34,9 +27,13 @@ export function handlePrivMsg(msg: string): PrivateMsg {
     chanName += curr;
   }
   chatMsg = message.slice(start + 2, message.length - 1).join("");
+
+  const directMsg = chatMsg.toLowerCase().includes(displayName);
+
   return {
     userName,
     chatMsg,
     chanName,
+    directMsg,
   };
 }
