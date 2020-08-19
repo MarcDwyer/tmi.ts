@@ -1,4 +1,4 @@
-export const IrcUrl = "wss://irc-ws.chat.twitch.tv:443";
+export const SecureIrcUrl = "wss://irc-ws.chat.twitch.tv:443";
 
 export type TwitchCreds = {
   clientId: string;
@@ -13,3 +13,12 @@ export type TokenResponse = {
   token_type: string;
   scopes?: string[];
 };
+
+export enum MsgTypes {
+  privMsg = "PRIVMSG",
+  join = "JOIN",
+  part = "PART",
+}
+
+type KeysOfMsgTypes = keyof typeof MsgTypes;
+export type TMsgTypes = typeof MsgTypes[KeysOfMsgTypes];

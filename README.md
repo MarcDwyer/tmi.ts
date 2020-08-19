@@ -28,7 +28,7 @@ await Promise.all(
     await channel.sendMsg("wow this stream is Poggers");
   })
 );
-// tc.channels === Map<chanName, Channel>
+// tc.channels === Map<chanName, Channel>()
 for (const channel of tc.channels.values()) {
   await channel.sendMsg(
     "I can also say PogChampions to all connected channels, Poggies!"

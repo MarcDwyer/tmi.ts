@@ -25,7 +25,7 @@ export function handlePrivMsg(msg: string): PrivateMsg {
   }
   let start = message.indexOf("#");
 
-  for (let x = start + 1; x < message.length; ++x) {
+  for (let x = start; x < message.length; ++x) {
     const curr = message[x];
     if (curr === " ") {
       start = x;

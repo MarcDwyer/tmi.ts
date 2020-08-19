@@ -2,7 +2,7 @@ import {
   WebSocket,
 } from "https://deno.land/x/websocket/mod.ts";
 import Channel from "./channel.ts";
-import { IrcUrl, TwitchCreds } from "./twitch_data.ts";
+import { SecureIrcUrl, TwitchCreds, MsgTypes } from "./twitch_data.ts";
 import { red } from "https://deno.land/std@0.64.0/fmt/colors.ts";
 import { isPrivMsg, handlePrivMsg } from "./message_handlers.ts";
 
@@ -13,15 +13,15 @@ export class TwitchChat {
   constructor(private twitchCred: TwitchCreds) {}
   connect() {
     return new Promise<void>((res, rej) => {
-      const ws = new WebSocket(IrcUrl);
+      const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", (msg: string) => {
         if (isPrivMsg(msg)) {
           const pmsg = handlePrivMsg(msg);
-          if (pmsg.chatMsg.includes(this.twitchCred.userName)) {
-            console.log(pmsg);
+          if (this.channels.has(pmsg.chanName)) {
+            const c = this.channels.get(pmsg.chanName);
+            c?.signal.resolve();
+            c?.[Symbol.asyncIterator](pmsg.chatMsg);
           }
-        } else {
-          console.log(msg);
         }
       });
       ws.on("pong", () => console.log("pong"));
