@@ -11,6 +11,7 @@ export class TwitchChat {
   channels = new Map<string, Channel>();
 
   constructor(private twitchCred: TwitchCreds) {}
+
   connect() {
     return new Promise<void>((res, rej) => {
       const ws = new WebSocket(SecureIrcUrl);
@@ -24,10 +25,9 @@ export class TwitchChat {
           }
         }
       });
-      ws.on("pong", () => console.log("pong"));
-      ws.on("ping", () => {
-        console.log("ping");
-        ws.send("pong");
+      ws.on("ping", (p: any) => {
+        console.log(p);
+        ws.send(p || new Uint8Array(0xA));
       });
       ws.on("open", async () => {
         try {
@@ -43,9 +43,6 @@ export class TwitchChat {
           rej();
         }
       });
-      setTimeout(() => {
-        if (ws.isClosed) rej();
-      }, 2500);
     });
   }
   async joinChannel(chan: string): Promise<Channel> {

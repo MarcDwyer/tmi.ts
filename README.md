@@ -8,7 +8,7 @@ Deno TMI allows you to create bots and automate tasks in a users Twitch Chat.
 
 ## What you need in order to use
 
-1. OAuth token -- https://twitchapps.com/tokengen/ -- please make sure that your app's redirect url matches the websites redirect url
+1. OAuth token -- https://twitchapps.com/tokengen/ -- make sure that your app's redirect url matches the websites redirect url
 2. Twitch Client ID
 3. Your Twitch username in lower-case
 
@@ -25,7 +25,7 @@ const channel = await tc.joinChannel("xqc");
 for await (const pmsg of channel) {
   // do something with msg here
   if (pmsg.directMsg) {
-    channel.sendMsg(`@${msg.userName} hey whats up! Poggies!`);
+    channel.send(`@${msg.userName} hey whats up! Poggies!`);
   }
 }
 
@@ -36,14 +36,17 @@ await tc.connect();
 
 const channels: string[] = ["xqc", "sodapoppin", "ninja"];
 
-const listener = async () => {
+const listeners = async () => {
   for (const channel of channels) {
     const connChan = await tc.joinChannel(channel);
-    for await (const pmsg of connChan) {
-      // do something with msg here
-    }
+
+    (async () => {
+      for await (const pmsg of connChan) {
+        // do something with msg here
+      }
+    })();
   }
 };
 
-listener();
+listeners();
 ```

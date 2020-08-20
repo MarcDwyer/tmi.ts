@@ -12,7 +12,7 @@ class Channel {
 
   constructor(private chanName: string, private tc: TwitchChat) {}
 
-  async sendMsg(msg: string) {
+  async send(msg: string) {
     const { ws } = this.tc;
     if (!ws) throw new Error("No ws connection has been made");
     const query = `PRIVMSG ${this.chanName} :${msg}`;
@@ -22,13 +22,9 @@ class Channel {
     const { ws } = this.tc;
     try {
       if (!ws) throw "No ws connection has been made";
-      if (ws.isClosed) {
-        throw "WebSocket connection has been closed";
-      }
+      await ws.send(`PART #${this.chanName}`);
       this.tc.channels.delete(this.chanName);
       this.isConnected = false;
-      console.log(`parted ${this.chanName}`);
-      await ws.send(`PART #${this.chanName}`);
     } catch (err) {
       console.log(err);
     }
