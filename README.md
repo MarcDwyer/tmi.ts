@@ -8,7 +8,7 @@ Deno TMI allows you to create bots and automate tasks in a users Twitch Chat.
 
 ## What you need in order to use
 
-1. OAuth token -- https://twitchapps.com/tokengen/
+1. OAuth token -- https://twitchapps.com/tokengen/ -- please make sure that your app's redirect url matches the websites redirect url
 2. Twitch Client ID
 3. Your Twitch username in lower-case
 
