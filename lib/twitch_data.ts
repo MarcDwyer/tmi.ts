@@ -2,7 +2,6 @@ export const SecureIrcUrl = "wss://irc-ws.chat.twitch.tv:443";
 
 export type TwitchCreds = {
   clientId: string;
-  clientSecret: string;
   userName: string;
   oauth: string;
 };
@@ -25,7 +24,7 @@ export type TMsgTypes = typeof MsgTypes[KeysOfMsgTypes];
 
 export type TwitchMessage = {
   type: TMsgTypes;
-  msg: PrivateMsg;
+  privMsg?: PrivateMsg;
 };
 
 export type PrivateMsg = {

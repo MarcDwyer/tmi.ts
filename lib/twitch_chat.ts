@@ -2,7 +2,7 @@ import {
   WebSocket,
 } from "https://deno.land/x/websocket/mod.ts";
 import Channel from "./channel.ts";
-import { SecureIrcUrl, TwitchCreds, MsgTypes } from "./twitch_data.ts";
+import { SecureIrcUrl, TwitchCreds } from "./twitch_data.ts";
 import { red } from "https://deno.land/std@0.64.0/fmt/colors.ts";
 import { isPrivMsg, handlePrivMsg } from "./message_handlers.ts";
 
@@ -19,7 +19,7 @@ export class TwitchChat {
           const pmsg = handlePrivMsg(msg, this.twitchCred.userName);
           if (this.channels.has(pmsg.chanName)) {
             const c = this.channels.get(pmsg.chanName);
-            c?.messages.push({ type: MsgTypes.privMsg, msg: pmsg });
+            c?.messages.push(pmsg);
             c?.signal.resolve();
           }
         }

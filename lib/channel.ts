@@ -1,5 +1,5 @@
 import { TwitchChat } from "./twitch_chat.ts";
-import { TwitchMessage } from "./twitch_data.ts";
+import { PrivateMsg } from "./twitch_data.ts";
 import {
   deferred,
   Deferred,
@@ -8,7 +8,7 @@ import {
 class Channel {
   private isConnected: boolean = true;
   signal: Deferred<void> = deferred();
-  messages: TwitchMessage[] = [];
+  messages: PrivateMsg[] = [];
 
   constructor(private chanName: string, private tc: TwitchChat) {}
 
@@ -46,7 +46,7 @@ class Channel {
       this.signal = deferred();
     }
   }
-  [Symbol.asyncIterator](): AsyncIterableIterator<TwitchMessage> {
+  [Symbol.asyncIterator](): AsyncIterableIterator<PrivateMsg> {
     return this.msgIterator();
   }
 }
