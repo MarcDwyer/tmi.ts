@@ -1,5 +1,5 @@
 import { MsgTypes, PrivateMsg } from "./twitch_data.ts";
-
+import { fail } from "https://deno.land/std@0.65.0/testing/asserts.ts";
 export function isPrivMsg(msg: string) {
   return msg.includes(MsgTypes.privMsg);
 }
@@ -36,4 +36,12 @@ export function handlePrivMsg(msg: string, displayName: string): PrivateMsg {
     chanName,
     directMsg,
   };
+}
+
+// :tmi.twitch.tv NOTICE * :Login authentication failed
+type AuthStatus = [boolean, boolean];
+export function isAuthMsg(msg: string): AuthStatus {
+  if (/failed/.test(msg)) return [true, false];
+  if (/Welcome/.test(msg)) return [true, true];
+  return [false, false];
 }

@@ -1,10 +1,10 @@
 # Deno Twitch Message Interface
 
-this package is very similar to [tmi.js](https://github.com/tmijs/tmi.js). This package is still very early in development.
+this package is very similar to [tmi.js](https://github.com/tmijs/tmi.js) but for Deno. This package is still very early in development.
 
 ## What it does
 
-Deno TMI allows you to create bots and automate tasks in a users Twitch Chat.
+tmi.ts allows you to create bots and automate tasks in a users Twitch Chat.
 
 ## What you need in order to use
 

@@ -4,7 +4,11 @@ import {
 import Channel from "./channel.ts";
 import { SecureIrcUrl, TwitchCreds } from "./twitch_data.ts";
 import { red } from "https://deno.land/std@0.64.0/fmt/colors.ts";
-import { isPrivMsg, handlePrivMsg } from "./message_handlers.ts";
+import {
+  isPrivMsg,
+  handlePrivMsg,
+  isAuthMsg,
+} from "./message_handlers.ts";
 
 export class TwitchChat {
   ws: WebSocket | null = null;
@@ -13,7 +17,7 @@ export class TwitchChat {
   constructor(private twitchCred: TwitchCreds) {}
 
   connect() {
-    return new Promise<void>((res, rej) => {
+    return new Promise<string>((res, rej) => {
       const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", (msg: string) => {
         if (isPrivMsg(msg)) {
@@ -23,7 +27,21 @@ export class TwitchChat {
             c?.messages.push(pmsg);
             c?.signal.resolve();
           }
+          return;
         }
+        const [authMsg, isSucc] = isAuthMsg(msg);
+        if (authMsg) {
+          switch (isSucc) {
+            case true:
+              res(msg);
+              break;
+            case false:
+              rej(msg);
+              break;
+          }
+          return;
+        }
+        console.log(msg);
       });
       ws.on("ping", (p: any) => {
         console.log(p);
@@ -36,11 +54,10 @@ export class TwitchChat {
           );
           await ws.send(`NICK ${this.twitchCred.userName}`);
           this.ws = ws;
-          res();
         } catch (err) {
           if (typeof err !== "string") err = JSON.stringify(err);
           console.log(red(err));
-          rej();
+          rej(err);
         }
       });
     });

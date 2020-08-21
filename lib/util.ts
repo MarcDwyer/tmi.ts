@@ -18,6 +18,3 @@ export async function getOAuth(
     console.log(err);
   }
 }
-
-//        displayName       address                 msgType channel actualMsg
-// msg -- :sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSG #maya :the scrollwheel to jump
