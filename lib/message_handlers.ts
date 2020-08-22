@@ -1,5 +1,5 @@
 import { MsgTypes, PrivateMsg } from "./twitch_data.ts";
-import { fail } from "https://deno.land/std@0.65.0/testing/asserts.ts";
+
 export function isPrivMsg(msg: string) {
   return msg.includes(MsgTypes.privMsg);
 }
@@ -26,7 +26,7 @@ export function handlePrivMsg(msg: string, displayName: string): PrivateMsg {
     }
     chanName += curr;
   }
-  chatMsg = message.slice(start + 2, message.length - 1).join("");
+  chatMsg = message.slice(start + 2, message.length).join("");
 
   const directMsg = chatMsg.toLowerCase().includes(displayName);
 

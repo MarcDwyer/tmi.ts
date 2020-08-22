@@ -36,12 +36,11 @@ export class TwitchChat {
               res(msg);
               break;
             case false:
+              ws.close();
               rej(msg);
-              break;
           }
           return;
         }
-        console.log(msg);
       });
       ws.on("ping", (p: any) => {
         console.log(p);
@@ -56,7 +55,6 @@ export class TwitchChat {
           this.ws = ws;
         } catch (err) {
           if (typeof err !== "string") err = JSON.stringify(err);
-          console.log(red(err));
           rej(err);
         }
       });

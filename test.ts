@@ -1,16 +1,8 @@
 import { TwitchChat } from "./mod.ts";
 import { config } from "https://deno.land/x/dotenv/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.65.0/testing/asserts.ts";
-import { isAuthMsg } from "./lib/message_handlers.ts";
-
-const { NEWOAUTH, USERNAME, CID } = config();
-const tc = new TwitchChat(
-  { oauth: NEWOAUTH, userName: USERNAME.toLowerCase(), clientId: CID },
-);
-
-tc.connect().then(() => console.log("resolved")).catch((err) =>
-  console.log(`Error triggered: ${err}`)
-);
+import { isAuthMsg, handlePrivMsg } from "./lib/message_handlers.ts";
+import { PrivateMsg } from "./lib/twitch_data.ts";
 
 Deno.test("detect authentication messages and return if fail or pass", () => {
   const test1 = {
@@ -27,5 +19,37 @@ Deno.test("detect authentication messages and return if fail or pass", () => {
   };
   for (const { test, expect } of [test1, test2, test3]) {
     assertEquals(isAuthMsg(test), expect);
+  }
+});
+// :sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSG #maya :the scrollwheel to jump
+type PrivTest = {
+  expect: PrivateMsg;
+  test: string;
+};
+Deno.test("PrivMsg should return PrivateMsg type", () => {
+  const user = "gamer112";
+  const test1: PrivTest = {
+    test:
+      ":sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSG #maya :the scrollwheel to jump",
+    expect: {
+      userName: "sinimurk",
+      chatMsg: "the scrollwheel to jump",
+      chanName: "#maya",
+      directMsg: false,
+    },
+  };
+  const test2: PrivTest = {
+    test:
+      `:sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSG #maya :@${user} the scrollwheel to jump`,
+    expect: {
+      userName: "sinimurk",
+      chatMsg: `@${user} the scrollwheel to jump`,
+      chanName: "#maya",
+      directMsg: true,
+    },
+  };
+
+  for (const { test, expect } of [test1, test2]) {
+    assertEquals(handlePrivMsg(test, user), expect);
   }
 });
