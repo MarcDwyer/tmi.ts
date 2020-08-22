@@ -1,5 +1,3 @@
-import { TwitchChat } from "./mod.ts";
-import { config } from "https://deno.land/x/dotenv/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.65.0/testing/asserts.ts";
 import { isAuthMsg, handlePrivMsg } from "./lib/message_handlers.ts";
 import { PrivateMsg } from "./lib/twitch_data.ts";

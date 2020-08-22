@@ -3,7 +3,7 @@ import {
 } from "https://deno.land/x/websocket/mod.ts";
 import Channel from "./channel.ts";
 import { SecureIrcUrl, TwitchCreds } from "./twitch_data.ts";
-import { red } from "https://deno.land/std@0.64.0/fmt/colors.ts";
+
 import {
   isPrivMsg,
   handlePrivMsg,
