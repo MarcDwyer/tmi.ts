@@ -15,7 +15,7 @@ tmi.ts allows you to create bots and automate tasks in a users Twitch Chat.
 ### Example
 
 ```typescript
-import { TwitchChat } from "./mod.ts";
+import { TwitchChat } from "https://deno.land/x/tmi@v1.1/mod.ts";
 
 const tc = new TwitchChat({ userName, clientId, oauth });
 
