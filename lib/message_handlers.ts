@@ -45,3 +45,8 @@ export function isAuthMsg(msg: string): AuthStatus {
   if (/Welcome/.test(msg)) return [true, true];
   return [false, false];
 }
+
+// PING :tmi.twitch.tv
+export function isPing(msg: string) {
+  return msg.startsWith("PING");
+}

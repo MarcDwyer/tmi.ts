@@ -12,6 +12,11 @@ class Channel {
 
   constructor(private chanName: string, private tc: TwitchChat) {}
 
+  add(p: PrivateMsg) {
+    this.messages.push(p);
+    this.signal.resolve();
+  }
+
   async send(msg: string) {
     const { ws } = this.tc;
     if (!ws) throw new Error("No ws connection has been made");

@@ -8,6 +8,7 @@ import {
   isPrivMsg,
   handlePrivMsg,
   isAuthMsg,
+  isPing,
 } from "./message_handlers.ts";
 
 export class TwitchChat {
@@ -19,13 +20,12 @@ export class TwitchChat {
   connect() {
     return new Promise<string>((res, rej) => {
       const ws = new WebSocket(SecureIrcUrl);
-      ws.on("message", (msg: string) => {
+      ws.on("message", async (msg: string) => {
         if (isPrivMsg(msg)) {
           const pmsg = handlePrivMsg(msg, this.twitchCred.userName);
           if (this.channels.has(pmsg.chanName)) {
             const c = this.channels.get(pmsg.chanName);
-            c?.messages.push(pmsg);
-            c?.signal.resolve();
+            c?.add(pmsg);
           }
           return;
         }
@@ -41,11 +41,13 @@ export class TwitchChat {
           }
           return;
         }
+        if (isPing(msg)) {
+          ws.send("PONG :tmi.twitch.tv");
+          return;
+        }
       });
-      ws.on("ping", (p: any) => {
-        console.log(p);
-        ws.send(p || new Uint8Array(0xA));
-      });
+      ws.on("ping", (p: any) => ws.send(p || new Uint8Array(0xA)));
+
       ws.on("open", async () => {
         try {
           await ws.send(
