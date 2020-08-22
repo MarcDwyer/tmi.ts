@@ -40,12 +40,12 @@ Deno.test("PrivMsg should return PrivateMsg type", () => {
   };
   const test2: PrivTest = {
     test:
-      `:sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSG #maya :@${user} the scrollwheel to jump`,
+      `:apple12!apple12@apple12.tmi.twitch.tv PRIVMSG #ninja :this stream is pog`,
     expect: {
-      userName: "sinimurk",
-      chatMsg: `@${user} the scrollwheel to jump`,
-      chanName: "#maya",
-      directMsg: true,
+      userName: "apple12",
+      chatMsg: `this stream is pog`,
+      chanName: "#ninja",
+      directMsg: false,
     },
   };
 
