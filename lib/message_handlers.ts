@@ -4,7 +4,7 @@ export function isPrivMsg(msg: string) {
   return msg.includes(MsgTypes.privMsg);
 }
 //        displayName       address                 msgType channel actualMsg
-// msg -- :sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSG #maya :the scrollwheel to jump
+// msg -- :sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSGls#maya :the scrollwheel to jump
 
 export function handlePrivMsg(msg: string, displayName: string): PrivateMsg {
   const message = msg.split("");

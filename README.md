@@ -16,18 +16,24 @@ tmi.ts allows you to create bots and automate tasks in a users Twitch Chat.
 
 ```typescript
 import { TwitchChat } from "https://deno.land/x/tmi/mod.ts";
+import { delay } from "https://deno.land/std@0.64.0/async/delay.ts";
 
 const tc = new TwitchChat({ userName, clientId, oauth });
 
 const channel = await tc.joinChannel("xqc");
 
 // Listen to the channels messages
-for await (const pmsg of channel) {
-  // do something with msg here
-  if (pmsg.directMsg) {
-    channel.send(`@${msg.userName} hey whats up! Poggies!`);
+(async () => {
+  for await (const pmsg of channel) {
+    // do something with msg here
+    if (pmsg.directMsg) {
+      channel.send(`@${msg.userName} hey whats up! Poggies!`);
+    }
   }
-}
+})();
+// Wait 10 minutes then close TwitchChat connection
+await delay(60000 * 10);
+tc.exit();
 
 // OR
 // Listen to multiple channels
@@ -36,17 +42,24 @@ await tc.connect();
 
 const channels: string[] = ["xqc", "sodapoppin", "ninja"];
 
-const listeners = async () => {
-  for (const channel of channels) {
-    const connChan = await tc.joinChannel(channel);
-
+// Join all Channels
+await Promise.allSettled(
+  channels.map(async (channel) => {
+    const c = await tc.joinChannel(channel);
+    await c.send("Hello I've joined the channel");
     (async () => {
-      for await (const pmsg of connChan) {
+      for await (const pmsg of channel) {
         // do something with msg here
+        if (pmsg.directMsg) {
+          channel.send(`@${msg.userName} hey whats up! Poggies!`);
+        }
       }
     })();
-  }
-};
-
-listeners();
+  })
+);
+// Run code here if you want to do something after joining channels;
+console.log("Finished joining all channels");
+// Wait 10 minutes then close TwitchChat connection
+await delay(60000 * 10);
+tc.exit();
 ```
