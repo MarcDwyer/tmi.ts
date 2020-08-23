@@ -19,13 +19,17 @@ export class TwitchChat {
 
   connect() {
     return new Promise<string>((res, rej) => {
+      if (this.ws && !this.ws.isClosed) {
+        rej("Websocket connection has already been established");
+      }
       const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", async (msg: string) => {
         if (isPrivMsg(msg)) {
           const pmsg = handlePrivMsg(msg, this.twitchCred.userName);
           if (this.channels.has(pmsg.chanName)) {
             const c = this.channels.get(pmsg.chanName);
-            c?.add(pmsg);
+            c?.messages.push(pmsg);
+            c?.signal.resolve();
           }
           return;
         }
@@ -46,6 +50,7 @@ export class TwitchChat {
           return;
         }
       });
+
       ws.on("ping", (p: any) => ws.send(p || new Uint8Array(0xA)));
 
       ws.on("open", async () => {
@@ -76,6 +81,18 @@ export class TwitchChat {
       return c;
     } catch (err) {
       console.error(err);
+      return err;
+    }
+  }
+  async exit(): Promise<string | void> {
+    try {
+      if (!this.ws) throw "Websocket connected hasnt been established yet";
+      for (const channel of this.channels.values()) {
+        await channel.part();
+      }
+      await this.ws.close();
+      this.ws = null;
+    } catch (err) {
       return err;
     }
   }
