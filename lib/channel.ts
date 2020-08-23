@@ -7,15 +7,9 @@ import {
 
 class Channel {
   private isConnected: boolean = true;
-  signal: Deferred<void> = deferred();
-  messages: PrivateMsg[] = [];
+  signal: Deferred<PrivateMsg> = deferred();
 
   constructor(private chanName: string, private tc: TwitchChat) {}
-
-  // add(p: PrivateMsg) {
-  //   this.messages.push(p);
-  //   this.signal.resolve();
-  // }
 
   async send(msg: string) {
     const { ws } = this.tc;
@@ -39,11 +33,8 @@ class Channel {
   }
   private async *msgIterator() {
     while (this.isConnected) {
-      await this.signal;
-      for (const msg of this.messages) {
-        if (msg) yield msg;
-      }
-      this.messages.length = 0;
+      const msg = await this.signal;
+      yield msg;
       this.signal = deferred();
     }
   }

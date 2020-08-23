@@ -28,8 +28,7 @@ export class TwitchChat {
           const pmsg = handlePrivMsg(msg, this.twitchCred.userName);
           if (this.channels.has(pmsg.chanName)) {
             const c = this.channels.get(pmsg.chanName);
-            c?.messages.push(pmsg);
-            c?.signal.resolve();
+            c?.signal.resolve(pmsg);
           }
           return;
         }
