@@ -21,14 +21,15 @@ export class TwitchChat {
     return new Promise<string>((res, rej) => {
       if (this.ws && !this.ws.isClosed) {
         rej("Websocket connection has already been established");
+        return;
       }
       const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", async (msg: string) => {
         if (isPrivMsg(msg)) {
           const pmsg = handlePrivMsg(msg, this.twitchCred.userName);
-          if (this.channels.has(pmsg.chanName)) {
-            const c = this.channels.get(pmsg.chanName);
-            c?.signal.resolve(pmsg);
+          const c = this.channels.get(pmsg.chanName);
+          if (c) {
+            c.signal.resolve(pmsg);
           }
           return;
         }
