@@ -9,7 +9,7 @@ class Channel {
   private isConnected: boolean = true;
   signal: Deferred<PrivateMsg> = deferred();
 
-  constructor(private chanName: string, private tc: TwitchChat) {}
+  constructor(public chanName: string, private tc: TwitchChat) {}
 
   async send(msg: string) {
     const { ws } = this.tc;
@@ -28,7 +28,7 @@ class Channel {
       console.log(err);
     }
   }
-  get channelOwnerName() {
+  get ownerName() {
     return this.chanName.slice(1, this.chanName.length);
   }
   private async *msgIterator() {

@@ -68,7 +68,7 @@ export class TwitchChat {
     });
   }
   async joinChannel(chan: string): Promise<Channel> {
-    if (chan[0] !== "#") chan = "#" + chan;
+    if (chan[0] !== "#") chan = "#" + chan.toLowerCase();
     try {
       if (
         !this.ws || this.ws && this.ws.isClosed
