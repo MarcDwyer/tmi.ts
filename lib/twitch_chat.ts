@@ -10,6 +10,7 @@ import {
   isAuthMsg,
   isPing,
 } from "./message_handlers.ts";
+import { getChannelName } from "./util.ts";
 
 export class TwitchChat {
   ws: WebSocket | null = null;
@@ -68,7 +69,7 @@ export class TwitchChat {
     });
   }
   async joinChannel(chan: string): Promise<Channel> {
-    if (chan[0] !== "#") chan = "#" + chan.toLowerCase();
+    chan = getChannelName(chan);
     try {
       if (
         !this.ws || this.ws && this.ws.isClosed

@@ -6,6 +6,7 @@ import {
   isPrivMsg,
 } from "./lib/message_handlers.ts";
 import { PrivateMsg } from "./lib/twitch_data.ts";
+import { getChannelName } from "./lib/util.ts";
 
 Deno.test("detect authentication messages and return if fail or pass", () => {
   const test1 = {
@@ -84,4 +85,19 @@ Deno.test("Detect private messages", () => {
   };
 
   assertEquals(isPrivMsg(test1.test), test1.expect);
+});
+
+Deno.test("Channel function test", () => {
+  const test1 = {
+    test: "MaYa",
+    expect: "#maya",
+  };
+  const test2 = {
+    test: "knut",
+    expect: "#knut",
+  };
+
+  for (const { expect, test } of [test1, test2]) {
+    assertEquals(getChannelName(test), expect);
+  }
 });

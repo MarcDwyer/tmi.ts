@@ -18,3 +18,9 @@ export async function getOAuth(
     console.log(err);
   }
 }
+
+export function getChannelName(channel: string) {
+  channel = channel.toLowerCase();
+  if (channel[0] !== "#") channel = "#" + channel;
+  return channel;
+}
