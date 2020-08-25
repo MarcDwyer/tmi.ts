@@ -1,7 +1,7 @@
 import {
   WebSocket,
 } from "https://deno.land/x/websocket/mod.ts";
-import Channel from "./channel.ts";
+import { Channel } from "./channel.ts";
 import { SecureIrcUrl, TwitchCreds } from "./twitch_data.ts";
 
 import {

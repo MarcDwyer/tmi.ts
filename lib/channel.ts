@@ -5,7 +5,7 @@ import {
   Deferred,
 } from "https://deno.land/std@0.64.0/async/deferred.ts";
 
-class Channel {
+export class Channel {
   private isConnected: boolean = true;
   signal: Deferred<PrivateMsg> = deferred();
 
@@ -42,5 +42,3 @@ class Channel {
     return this.msgIterator();
   }
 }
-
-export default Channel;
