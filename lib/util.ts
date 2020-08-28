@@ -24,3 +24,14 @@ export function getChannelName(channel: string) {
   if (channel[0] !== "#") channel = "#" + channel;
   return channel;
 }
+
+export function testStr(msg: string) {
+  return msg.split("\r\n");
+}
+
+export function isMatch(str: string, arry: string[]) {
+  for (const s of arry) {
+    if (str === s) return true;
+  }
+  return false;
+}

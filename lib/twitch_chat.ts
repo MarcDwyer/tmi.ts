@@ -2,7 +2,7 @@ import {
   WebSocket,
 } from "https://deno.land/x/websocket/mod.ts";
 import { Channel } from "./channel.ts";
-import { SecureIrcUrl, TwitchCreds } from "./twitch_data.ts";
+import { SecureIrcUrl, TwitchCreds, TMsgTypes } from "./twitch_data.ts";
 
 import {
   isPrivMsg,
@@ -10,13 +10,14 @@ import {
   isAuthMsg,
   isPing,
 } from "./message_handlers.ts";
-import { getChannelName } from "./util.ts";
+import { getChannelName, isMatch } from "./util.ts";
+import { getTags } from "./parser.ts";
 
 export class TwitchChat {
   ws: WebSocket | null = null;
   channels = new Map<string, Channel>();
 
-  constructor(private twitchCred: TwitchCreds) {}
+  constructor(public twitchCred: TwitchCreds) {}
 
   connect() {
     return new Promise<string>((res, rej) => {
@@ -26,6 +27,18 @@ export class TwitchChat {
       }
       const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", async (msg: string) => {
+        //  const args = msg.match(/\S+/g);
+        const nextSpace = msg.indexOf(" ");
+        const rawTags = msg.slice(1, nextSpace).split(";");
+        console.log(rawTags);
+        // let channel: Channel | undefined;
+        // console.log(args);
+        // if (args[2] in TMsgTypes) {
+        //   channel = this.channels.get(args[3]);
+        //   //@ts-ignore
+        //   if (channel) channel.triggerFunc(args[2], msg);
+        // }
+
         if (isPrivMsg(msg)) {
           const pmsg = handlePrivMsg(msg, this.twitchCred.userName);
           const c = this.channels.get(pmsg.chanName);
@@ -38,6 +51,9 @@ export class TwitchChat {
         if (authMsg) {
           switch (isSucc) {
             case true:
+              this.ws?.send(
+                "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership",
+              );
               res(msg);
               break;
             case false:

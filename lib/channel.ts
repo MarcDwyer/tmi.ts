@@ -1,12 +1,15 @@
 import { TwitchChat } from "./twitch_chat.ts";
-import { PrivateMsg } from "./twitch_data.ts";
+import { PrivateMsg, MessageTypes } from "./twitch_data.ts";
 import {
   deferred,
   Deferred,
 } from "https://deno.land/std@0.64.0/async/deferred.ts";
 
+export type EventFunc = (msg: any) => void;
+
 export class Channel {
   private isConnected: boolean = true;
+  private funcMap = new Map<MessageTypes, EventFunc>();
   signal: Deferred<PrivateMsg> = deferred();
 
   constructor(public chanName: string, private tc: TwitchChat) {}
@@ -30,6 +33,13 @@ export class Channel {
   }
   get ownerName() {
     return this.chanName.slice(1, this.chanName.length);
+  }
+  on(event: MessageTypes, func: EventFunc) {
+    this.funcMap.set(event, func);
+  }
+  triggerFunc(evt: MessageTypes, msg: any) {
+    const func = this.funcMap.get(evt);
+    if (func) func(msg);
   }
   private async *msgIterator() {
     while (this.isConnected) {

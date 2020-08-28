@@ -13,19 +13,16 @@ export type TokenResponse = {
   scopes?: string[];
 };
 
-export enum MsgTypes {
-  privMsg = "PRIVMSG",
-  join = "JOIN",
-  part = "PART",
+export enum TMsgTypes {
+  PRIVMSG = "PRIVMSG",
+  ROOMSTATE = "ROOMSTATE",
+  CLEARCHAT = "CLEARCHAT",
+  CLEARMSG = "CLEARMSG	",
+  GLOBALUSERSTATE = "GLOBALUSERSTATE",
+  USERNOTICE = "USERNOTICE",
+  USERSTATE = "USERSTATE",
 }
-
-type KeysOfMsgTypes = keyof typeof MsgTypes;
-export type TMsgTypes = typeof MsgTypes[KeysOfMsgTypes];
-
-export type TwitchMessage = {
-  type: TMsgTypes;
-  privMsg?: PrivateMsg;
-};
+export type MessageTypes = keyof typeof TMsgTypes;
 
 export type PrivateMsg = {
   userName: string;

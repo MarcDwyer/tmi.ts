@@ -1,7 +1,7 @@
-import { MsgTypes, PrivateMsg } from "./twitch_data.ts";
+import { TMsgTypes, PrivateMsg } from "./twitch_data.ts";
 
 export function isPrivMsg(msg: string) {
-  return msg.includes(MsgTypes.privMsg);
+  return msg.includes(TMsgTypes.PRIVMSG);
 }
 //        displayName       address                 msgType channel actualMsg
 // msg -- :sinimurk!sinimurk@sinimurk.tmi.twitch.tv PRIVMSGls#maya :the scrollwheel to jump
