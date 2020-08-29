@@ -1,3 +1,5 @@
+import { TwitchMessage } from "./twitch_data.ts";
+
 /*
 	Copyright (c) 2013-2015, Fionn Kelleher All rights reserved.
 
@@ -22,26 +24,27 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 	OF SUCH DAMAGE.
 */
-const str1 =
-  "@badge-info=subscriber/2;badges=subscriber/0,premium/1;client-nonce=98969b4ae51cd142ba08129a5e75c0dd;color=;display-name=Outboardgull52;emotes=;flags=;id=17b342a4-d678-4327-983d-96350e3f6b87;mod=0;room-id=112493351;subscriber=1;tmi-sent-ts=1598426068396;turbo=0;user-id=82012997;user-type= :outboardgull52!outboardgull52@outboardgull52.tmi.twitch.tv PRIVMSG #margauxbrooke :NT";
+// const str1 =
+//  "@badge-info=subscriber/2;badges=subscriber/0,premium/1;client-nonce=98969b4ae51cd142ba08129a5e75c0dd;color=;display-name=Outboardgull52;emotes=;flags=;id=17b342a4-d678-4327-983d-96350e3f6b87;mod=0;room-id=112493351;subscriber=1;tmi-sent-ts=1598426068396;turbo=0;user-id=82012997;user-type= :outboardgull52!outboardgull52@outboardgull52.tmi.twitch.tv PRIVMSG #margauxbrooke :NT";
 
-type MessageData = {
-  raw: string;
-  tags: Map<string, string>;
-  prefix: string | null;
-  params: string[];
-  command: string | null;
-  channel: null | string;
-};
+// type MessageData = {
+//   raw: string;
+//   tags: Map<string, string>;
+//   prefix: string | null;
+//   params: string[];
+//   command: string | null;
+//   channel: null | string;
+// };
 
 export function handleMsg(data: string) {
-  const message: MessageData = {
+  const message: TwitchMessage = {
     raw: data,
     tags: new Map<string, string>(),
     prefix: null,
     command: null,
     params: [],
     channel: null,
+    directMsg: false,
   };
 
   // Position and nextspace are used by the parser as a reference..
@@ -102,6 +105,7 @@ export function handleMsg(data: string) {
   // current position to the end of the string as the command..
   if (nextspace === -1) {
     if (data.length > position) {
+      //@ts-ignore
       message.command = data.slice(position);
       return message;
     }
@@ -111,6 +115,7 @@ export function handleMsg(data: string) {
 
   // Else, the command is the current position up to the next space. After
   // that, we expect some parameters.
+  //@ts-ignore
   message.command = data.slice(position, nextspace);
 
   position = nextspace + 1;
@@ -159,5 +164,3 @@ export function handleMsg(data: string) {
   }
   return message;
 }
-
-console.log(handleMsg(str1));

@@ -1,5 +1,5 @@
-import { TwitchChat, MessagePayload } from "./twitch_chat.ts";
-import { PrivateMsg, TMsgTypes } from "./twitch_data.ts";
+import { TwitchChat } from "./twitch_chat.ts";
+import { TwitchMessage, MessageTypes, KeyMessageTypes } from "./twitch_data.ts";
 import {
   deferred,
   Deferred,
@@ -11,8 +11,9 @@ export type DeferredPayload = {
 };
 export class Channel {
   private isConnected: boolean = true;
-  private signals = new Map<string, Deferred<DeferredPayload>>();
-  signal: Deferred<PrivateMsg> = deferred();
+  private signals = new Map<string, Deferred<any>>();
+
+  privMsg = this.msgGen<TwitchMessage>(MessageTypes.PRIVMSG);
 
   constructor(public chanName: string, private tc: TwitchChat) {}
 
@@ -36,25 +37,28 @@ export class Channel {
   get ownerName() {
     return this.chanName.slice(1, this.chanName.length);
   }
-  private async *msgIterator() {
-    while (this.isConnected) {
-      const msg = await this.signal;
-      yield msg;
-      this.signal = deferred();
+  triggerMessage(msg: TwitchMessage) {
+    if (!msg.command) {
+      throw new Error(`Could not find ${msg.command} in signal map`);
     }
+    const signal = this.signals.get(msg.command);
+    signal?.resolve(msg);
   }
-  pushMsg(msg: MessagePayload) {
-    const signal = this.signals.get(msg.type);
-    signal?.resolve(msg.payload);
-  }
-  async *privMsg() {
-    let signal = this.signals.set("PRIVMSG", deferred()).get("PRIVMSG");
-    while (this.isConnected) {
-      const msg = await signal;
-      yield msg;
-    }
-  }
-  [Symbol.asyncIterator](): AsyncIterableIterator<PrivateMsg> {
-    return this.msgIterator();
+  private msgGen<T>(type: KeyMessageTypes) {
+    let isConnected = this.isConnected;
+    const reset = () => {
+      //@ts-ignore
+      const sig: Deferred<T> = this.signals.set(type, deferred()).get(type);
+      isConnected = this.isConnected;
+      return sig;
+    };
+    return async function* () {
+      let signal = reset();
+      while (isConnected) {
+        const msg = await signal;
+        yield msg;
+        signal = reset();
+      }
+    };
   }
 }

@@ -6,12 +6,9 @@ import {
   SecureIrcUrl,
   TwitchCreds,
   MessageTypes,
-  TMsgTypes,
 } from "./twitch_data.ts";
 
 import {
-  isPrivMsg,
-  handlePrivMsg,
   isAuthMsg,
   isPing,
 } from "./message_handlers.ts";
@@ -32,7 +29,6 @@ export type MessagePayload = {
 export class TwitchChat {
   ws: WebSocket | null = null;
   channels = new Map<string, Channel>();
-  private messages: MessagePayload[] = [];
 
   constructor(public twitchCred: TwitchCreds) {}
 
@@ -45,7 +41,21 @@ export class TwitchChat {
       const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", async (msg: string) => {
         //  const args = msg.match(/\S+/g);
-        console.log(handleMsg(msg));
+        const tmsg = handleMsg(msg);
+
+        if (tmsg && tmsg.channel && tmsg.command) {
+          const chan = this.channels.get(tmsg.channel);
+          if (!chan) {
+            return;
+          }
+          switch (tmsg.command) {
+            case MessageTypes.PRIVMSG:
+              chan.triggerMessage(tmsg);
+              break;
+            default:
+              console.log(`Default triggered: ${tmsg.command}`);
+          }
+        }
         // let channel: Channel | undefined;
         // console.log(args);
         // if (args[2] in TMsgTypes) {
@@ -54,14 +64,6 @@ export class TwitchChat {
         //   if (channel) channel.triggerFunc(args[2], msg);
         // }
 
-        if (isPrivMsg(msg)) {
-          const pmsg = handlePrivMsg(msg, this.twitchCred.userName);
-          const c = this.channels.get(pmsg.chanName);
-          if (c) {
-            c.signal.resolve(pmsg);
-          }
-          return;
-        }
         const [authMsg, isSucc] = isAuthMsg(msg);
         if (authMsg) {
           switch (isSucc) {
@@ -101,6 +103,7 @@ export class TwitchChat {
   }
   async joinChannel(chan: string): Promise<Channel> {
     chan = getChannelName(chan);
+    console.log(chan);
     try {
       if (
         !this.ws || this.ws && this.ws.isClosed
@@ -126,18 +129,6 @@ export class TwitchChat {
       this.ws = null;
     } catch (err) {
       return err;
-    }
-  }
-  private async messageProcessor() {
-    while (this.ws) {
-      //distribute messages to channels here
-      if (this.messages.length) {
-        for (const msg of this.messages) {
-          const chan = this.channels.get(msg.channel);
-          if (!chan) continue;
-          chan.;
-        }
-      }
     }
   }
 }

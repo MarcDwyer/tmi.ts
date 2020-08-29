@@ -13,7 +13,7 @@ export type TokenResponse = {
   scopes?: string[];
 };
 
-export enum TMsgTypes {
+export enum MessageTypes {
   PRIVMSG = "PRIVMSG",
   ROOMSTATE = "ROOMSTATE",
   CLEARCHAT = "CLEARCHAT",
@@ -22,11 +22,14 @@ export enum TMsgTypes {
   USERNOTICE = "USERNOTICE",
   USERSTATE = "USERSTATE",
 }
-export type MessageTypes = keyof typeof TMsgTypes;
+export type KeyMessageTypes = keyof typeof MessageTypes;
 
-export type PrivateMsg = {
-  userName: string;
-  chatMsg: string;
-  chanName: string;
+export type TwitchMessage = {
+  tags: Map<string, string>;
   directMsg: boolean;
+  raw: string | null;
+  prefix: string | null;
+  command: KeyMessageTypes | null;
+  channel: string | null;
+  params: string[];
 };
