@@ -1,15 +1,17 @@
-import { TwitchChat } from "./twitch_chat.ts";
-import { PrivateMsg, MessageTypes } from "./twitch_data.ts";
+import { TwitchChat, MessagePayload } from "./twitch_chat.ts";
+import { PrivateMsg, TMsgTypes } from "./twitch_data.ts";
 import {
   deferred,
   Deferred,
 } from "https://deno.land/std@0.64.0/async/deferred.ts";
-
 export type EventFunc = (msg: any) => void;
-
+export type DeferredPayload = {
+  type: string;
+  payload: any;
+};
 export class Channel {
   private isConnected: boolean = true;
-  private funcMap = new Map<MessageTypes, EventFunc>();
+  private signals = new Map<string, Deferred<DeferredPayload>>();
   signal: Deferred<PrivateMsg> = deferred();
 
   constructor(public chanName: string, private tc: TwitchChat) {}
@@ -34,18 +36,22 @@ export class Channel {
   get ownerName() {
     return this.chanName.slice(1, this.chanName.length);
   }
-  on(event: MessageTypes, func: EventFunc) {
-    this.funcMap.set(event, func);
-  }
-  triggerFunc(evt: MessageTypes, msg: any) {
-    const func = this.funcMap.get(evt);
-    if (func) func(msg);
-  }
   private async *msgIterator() {
     while (this.isConnected) {
       const msg = await this.signal;
       yield msg;
       this.signal = deferred();
+    }
+  }
+  pushMsg(msg: MessagePayload) {
+    const signal = this.signals.get(msg.type);
+    signal?.resolve(msg.payload);
+  }
+  async *privMsg() {
+    let signal = this.signals.set("PRIVMSG", deferred()).get("PRIVMSG");
+    while (this.isConnected) {
+      const msg = await signal;
+      yield msg;
     }
   }
   [Symbol.asyncIterator](): AsyncIterableIterator<PrivateMsg> {

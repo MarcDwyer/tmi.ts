@@ -2,7 +2,12 @@ import {
   WebSocket,
 } from "https://deno.land/x/websocket/mod.ts";
 import { Channel } from "./channel.ts";
-import { SecureIrcUrl, TwitchCreds, TMsgTypes } from "./twitch_data.ts";
+import {
+  SecureIrcUrl,
+  TwitchCreds,
+  MessageTypes,
+  TMsgTypes,
+} from "./twitch_data.ts";
 
 import {
   isPrivMsg,
@@ -10,12 +15,24 @@ import {
   isAuthMsg,
   isPing,
 } from "./message_handlers.ts";
-import { getChannelName, isMatch } from "./util.ts";
-import { getTags } from "./parser.ts";
+import { getChannelName } from "./util.ts";
+import { handleMsg } from "./parser.ts";
 
+/**
+ * TwitchChat processes message in async generator then passes down to channel generators
+ *        TwitchChat 
+ *             |
+ * Channel - Channel - Channel
+ */
+export type MessagePayload = {
+  type: MessageTypes;
+  channel: string;
+  payload: any;
+};
 export class TwitchChat {
   ws: WebSocket | null = null;
   channels = new Map<string, Channel>();
+  private messages: MessagePayload[] = [];
 
   constructor(public twitchCred: TwitchCreds) {}
 
@@ -28,9 +45,7 @@ export class TwitchChat {
       const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", async (msg: string) => {
         //  const args = msg.match(/\S+/g);
-        const nextSpace = msg.indexOf(" ");
-        const rawTags = msg.slice(1, nextSpace).split(";");
-        console.log(rawTags);
+        console.log(handleMsg(msg));
         // let channel: Channel | undefined;
         // console.log(args);
         // if (args[2] in TMsgTypes) {
@@ -111,6 +126,18 @@ export class TwitchChat {
       this.ws = null;
     } catch (err) {
       return err;
+    }
+  }
+  private async messageProcessor() {
+    while (this.ws) {
+      //distribute messages to channels here
+      if (this.messages.length) {
+        for (const msg of this.messages) {
+          const chan = this.channels.get(msg.channel);
+          if (!chan) continue;
+          chan.;
+        }
+      }
     }
   }
 }

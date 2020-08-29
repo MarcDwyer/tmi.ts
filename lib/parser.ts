@@ -31,6 +31,7 @@ type MessageData = {
   prefix: string | null;
   params: string[];
   command: string | null;
+  channel: null | string;
 };
 
 export function handleMsg(data: string) {
@@ -40,6 +41,7 @@ export function handleMsg(data: string) {
     prefix: null,
     command: null,
     params: [],
+    channel: null,
   };
 
   // Position and nextspace are used by the parser as a reference..
@@ -152,7 +154,9 @@ export function handleMsg(data: string) {
       break;
     }
   }
-
+  if (message.params.length && message.params[0][0] === "#") {
+    message.channel = message.params[0];
+  }
   return message;
 }
 
