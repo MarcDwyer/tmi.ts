@@ -1,9 +1,17 @@
 import { TwitchChat } from "./twitch_chat.ts";
-import { TwitchMessage, MessageTypes, KeyMessageTypes } from "./twitch_data.ts";
+import {
+  TwitchMessage,
+  MessageTypes,
+  KeyMessageTypes,
+  JoinMessage,
+  FormattedMessage,
+  PrivateMessage,
+} from "./twitch_data.ts";
 import {
   deferred,
   Deferred,
 } from "https://deno.land/std@0.64.0/async/deferred.ts";
+
 export type EventFunc = (msg: any) => void;
 export type DeferredPayload = {
   type: string;
@@ -13,7 +21,9 @@ export class Channel {
   private isConnected: boolean = true;
   private signals = new Map<string, Deferred<any>>();
 
-  privMsg = this.msgGen<TwitchMessage>(MessageTypes.PRIVMSG);
+  privMsg = this.msgGen<PrivateMessage>(MessageTypes.PRIVMSG);
+  joinMsg = this.msgGen<JoinMessage>(MessageTypes.JOIN);
+  roomStageMsg = this.msgGen<TwitchMessage>(MessageTypes.ROOMSTATE);
 
   constructor(public chanName: string, private tc: TwitchChat) {}
 
@@ -34,10 +44,10 @@ export class Channel {
       console.log(err);
     }
   }
-  get ownerName() {
+  get channelName() {
     return this.chanName.slice(1, this.chanName.length);
   }
-  triggerMessage(msg: TwitchMessage) {
+  resolveSignal(msg: FormattedMessage) {
     if (!msg.command) {
       throw new Error(`Could not find ${msg.command} in signal map`);
     }

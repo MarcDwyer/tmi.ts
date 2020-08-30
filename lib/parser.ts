@@ -1,4 +1,5 @@
-import { TwitchMessage } from "./twitch_data.ts";
+import { TwitchMessage, MessageTypes } from "./twitch_data.ts";
+import { removeBreaks } from "./util.ts";
 
 /*
 	Copyright (c) 2013-2015, Fionn Kelleher All rights reserved.
@@ -36,15 +37,17 @@ import { TwitchMessage } from "./twitch_data.ts";
 //   channel: null | string;
 // };
 
-export function handleMsg(data: string) {
+export function msgParcer(data: string) {
   const message: TwitchMessage = {
     raw: data,
     tags: new Map<string, string>(),
-    prefix: null,
-    command: null,
+    prefix: "",
+    command: MessageTypes.NONE,
     params: [],
-    channel: null,
+    channel: "",
     directMsg: false,
+    message: "",
+    username: "",
   };
 
   // Position and nextspace are used by the parser as a reference..
@@ -63,13 +66,13 @@ export function handleMsg(data: string) {
 
     // Tags are split by a semi colon..
     var rawTags = data.slice(1, nextspace).split(";");
-
+    console.log(rawTags);
     for (var i = 0; i < rawTags.length; i++) {
       // Tags delimited by an equals sign are key=value tags.
       // If there's no equals, we assign the tag a value of true.
       var tag = rawTags[i];
       const [k, v] = tag.split("=");
-      //@ts-ignore
+      console.log(k, v);
       message.tags.set(k, v);
     }
 
@@ -160,7 +163,16 @@ export function handleMsg(data: string) {
     }
   }
   if (message.params.length && message.params[0][0] === "#") {
-    message.channel = message.params[0];
+    const copy = { ...message };
+    const channel = removeBreaks(copy.params[0]);
+    message.params.shift();
+    message.channel = channel;
+    message.message = removeBreaks(copy.params.join(" "));
+  }
+
+  for (const c of message.prefix) {
+    if (c === "!") break;
+    message.username += c;
   }
   return message;
 }

@@ -21,15 +21,37 @@ export enum MessageTypes {
   GLOBALUSERSTATE = "GLOBALUSERSTATE",
   USERNOTICE = "USERNOTICE",
   USERSTATE = "USERSTATE",
+  JOIN = "JOIN",
+  NONE = "NONE",
 }
 export type KeyMessageTypes = keyof typeof MessageTypes;
+type Tags = Map<string, string>;
 
 export type TwitchMessage = {
-  tags: Map<string, string>;
+  tags: Tags;
   directMsg: boolean;
-  raw: string | null;
-  prefix: string | null;
-  command: KeyMessageTypes | null;
-  channel: string | null;
+  raw: string;
+  prefix: string;
+  command: KeyMessageTypes;
+  channel: string;
   params: string[];
+  message: string;
+  username: string;
 };
+
+export type JoinMessage = {
+  channel: string;
+  command: string;
+  raw: string;
+};
+
+export type PrivateMessage = {
+  username: string;
+  channel: string;
+  message: string;
+  directMsg: boolean;
+  command: string;
+  tags: Tags;
+};
+
+export type FormattedMessage = JoinMessage | PrivateMessage | TwitchMessage;

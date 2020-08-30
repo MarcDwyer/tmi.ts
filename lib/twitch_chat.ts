@@ -13,7 +13,8 @@ import {
   isPing,
 } from "./message_handlers.ts";
 import { getChannelName } from "./util.ts";
-import { handleMsg } from "./parser.ts";
+import { msgParcer } from "./parser.ts";
+import { FormatMessages } from "./format_messages.ts";
 
 /**
  * TwitchChat processes message in async generator then passes down to channel generators
@@ -39,30 +40,26 @@ export class TwitchChat {
         return;
       }
       const ws = new WebSocket(SecureIrcUrl);
-      ws.on("message", async (msg: string) => {
+      ws.on("message", (msg: string) => {
         //  const args = msg.match(/\S+/g);
-        const tmsg = handleMsg(msg);
-
+        const tmsg = msgParcer(msg);
+        console.log({ tmsg, msg });
         if (tmsg && tmsg.channel && tmsg.command) {
           const chan = this.channels.get(tmsg.channel);
           if (!chan) {
+            console.log(tmsg);
+
+            console.error(`Couldnt find: ${tmsg.channel}, ${tmsg.command}`);
             return;
           }
-          switch (tmsg.command) {
-            case MessageTypes.PRIVMSG:
-              chan.triggerMessage(tmsg);
-              break;
-            default:
-              console.log(`Default triggered: ${tmsg.command}`);
+          if (tmsg.command in MessageTypes) {
+            const formatted = new FormatMessages(
+              this.twitchCred.userName,
+              tmsg,
+            ).format();
+            chan.resolveSignal(formatted);
           }
         }
-        // let channel: Channel | undefined;
-        // console.log(args);
-        // if (args[2] in TMsgTypes) {
-        //   channel = this.channels.get(args[3]);
-        //   //@ts-ignore
-        //   if (channel) channel.triggerFunc(args[2], msg);
-        // }
 
         const [authMsg, isSucc] = isAuthMsg(msg);
         if (authMsg) {
@@ -103,7 +100,6 @@ export class TwitchChat {
   }
   async joinChannel(chan: string): Promise<Channel> {
     chan = getChannelName(chan);
-    console.log(chan);
     try {
       if (
         !this.ws || this.ws && this.ws.isClosed
