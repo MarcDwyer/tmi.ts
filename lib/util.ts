@@ -35,3 +35,12 @@ export function deleteEmptyKeys(r: TwitchMessage) {
 export function removeBreaks(s: string) {
   return s.replace(/(\r\n|\n|\r)/gm, "");
 }
+
+export function findChannelName(str: string) {
+  let chan = "";
+  for (const char of str) {
+    if (char === ":") break;
+    chan += char;
+  }
+  return chan;
+}

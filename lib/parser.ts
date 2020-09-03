@@ -1,4 +1,4 @@
-import { TwitchMessage, MessageTypes } from "./twitch_data.ts";
+import { TwitchMessage, Commands } from "./twitch_data.ts";
 import { removeBreaks } from "./util.ts";
 
 /*
@@ -36,13 +36,16 @@ import { removeBreaks } from "./util.ts";
 //   command: string | null;
 //   channel: null | string;
 // };
-
+/**
+ * 
+ * parces messages from twitch's websocket connection
+ */
 export function msgParcer(data: string) {
   const message: TwitchMessage = {
     raw: data,
     tags: new Map<string, string>(),
     prefix: "",
-    command: MessageTypes.NONE,
+    command: Commands.NONE,
     params: [],
     channel: "",
     directMsg: false,
@@ -66,13 +69,11 @@ export function msgParcer(data: string) {
 
     // Tags are split by a semi colon..
     var rawTags = data.slice(1, nextspace).split(";");
-    console.log(rawTags);
     for (var i = 0; i < rawTags.length; i++) {
       // Tags delimited by an equals sign are key=value tags.
       // If there's no equals, we assign the tag a value of true.
       var tag = rawTags[i];
       const [k, v] = tag.split("=");
-      console.log(k, v);
       message.tags.set(k, v);
     }
 
@@ -164,9 +165,13 @@ export function msgParcer(data: string) {
   }
   if (message.params.length && message.params[0][0] === "#") {
     const copy = { ...message };
-    const channel = removeBreaks(copy.params[0]);
+    let channel = "";
+    for (const char of message.params[0]) {
+      if (char === "@") break;
+      channel += char;
+    }
+    message.channel = removeBreaks(channel);
     message.params.shift();
-    message.channel = channel;
     message.message = removeBreaks(copy.params.join(" "));
   }
 

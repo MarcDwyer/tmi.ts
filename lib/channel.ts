@@ -1,8 +1,8 @@
 import { TwitchChat } from "./twitch_chat.ts";
 import {
   TwitchMessage,
-  MessageTypes,
-  KeyMessageTypes,
+  Commands,
+  KeyOfCommands,
   JoinMessage,
   FormattedMessage,
   PrivateMessage,
@@ -21,9 +21,11 @@ export class Channel {
   private isConnected: boolean = true;
   private signals = new Map<string, Deferred<any>>();
 
-  privMsg = this.msgGen<PrivateMessage>(MessageTypes.PRIVMSG);
-  joinMsg = this.msgGen<JoinMessage>(MessageTypes.JOIN);
-  roomStageMsg = this.msgGen<TwitchMessage>(MessageTypes.ROOMSTATE);
+  privMsg = this.msgGen<PrivateMessage>(Commands.PRIVMSG);
+  joinMsg = this.msgGen<JoinMessage>(Commands.JOIN);
+  roomStageMsg = this.msgGen<TwitchMessage>(Commands.ROOMSTATE);
+  clearChatMsg = this.msgGen<TwitchMessage>(Commands.CLEARCHAT);
+  clearMsg = this.msgGen<TwitchMessage>(Commands.CLEARMSG);
 
   constructor(public chanName: string, private tc: TwitchChat) {}
 
@@ -44,7 +46,7 @@ export class Channel {
       console.log(err);
     }
   }
-  get channelName() {
+  get channelOwnerName() {
     return this.chanName.slice(1, this.chanName.length);
   }
   resolveSignal(msg: FormattedMessage) {
@@ -54,7 +56,7 @@ export class Channel {
     const signal = this.signals.get(msg.command);
     signal?.resolve(msg);
   }
-  private msgGen<T>(type: KeyMessageTypes) {
+  private msgGen<T>(type: KeyOfCommands) {
     let isConnected = this.isConnected;
     const reset = () => {
       //@ts-ignore

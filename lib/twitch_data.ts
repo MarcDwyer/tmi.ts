@@ -13,32 +13,36 @@ export type TokenResponse = {
   scopes?: string[];
 };
 
-export enum MessageTypes {
+export enum Commands {
   PRIVMSG = "PRIVMSG",
   ROOMSTATE = "ROOMSTATE",
   CLEARCHAT = "CLEARCHAT",
-  CLEARMSG = "CLEARMSG	",
+  CLEARMSG = "CLEARMSG",
   GLOBALUSERSTATE = "GLOBALUSERSTATE",
   USERNOTICE = "USERNOTICE",
   USERSTATE = "USERSTATE",
   JOIN = "JOIN",
   NONE = "NONE",
+  PING = "PING",
+  WHISPER = "WHISPER",
 }
-export type KeyMessageTypes = keyof typeof MessageTypes;
+export type KeyOfCommands = keyof typeof Commands;
 type Tags = Map<string, string>;
 
-export type TwitchMessage = {
+export interface TwitchMessage {
   tags: Tags;
   directMsg: boolean;
   raw: string;
   prefix: string;
-  command: KeyMessageTypes;
+  command: KeyOfCommands;
   channel: string;
   params: string[];
   message: string;
   username: string;
-};
-
+}
+export interface ClearChatMessage extends TwitchMessage {
+  userName: string;
+}
 export type JoinMessage = {
   channel: string;
   command: string;

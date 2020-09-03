@@ -2,16 +2,18 @@ import {
   TwitchMessage,
   PrivateMessage,
   FormattedMessage,
-  MessageTypes,
+  Commands,
 } from "./twitch_data.ts";
+import { removeBreaks } from "./util.ts";
 
 export class FormatMessages {
   constructor(private clientUsername: string, private msg: TwitchMessage) {}
 
   private privMsg() {
     const { msg } = this;
+    const lowerMsg = msg.message.toLowerCase();
     const pm: PrivateMessage = {
-      directMsg: msg.message.includes(this.clientUsername),
+      directMsg: lowerMsg.includes(this.clientUsername),
       channel: msg.channel,
       username: msg.username,
       message: msg.message,
@@ -20,10 +22,25 @@ export class FormatMessages {
     };
     return pm;
   }
+  private whisperMsg(): TwitchMessage {
+    const message = this.msg.params[1];
+    if (!message) return this.msg;
+    return {
+      ...this.msg,
+      message: removeBreaks(message),
+    };
+  }
   format(): FormattedMessage {
     switch (this.msg.command) {
-      case MessageTypes.PRIVMSG:
+      case Commands.PRIVMSG:
         return this.privMsg();
+      case Commands.CLEARCHAT:
+        return {
+          ...this.msg,
+          username: this.msg.message,
+        };
+      case Commands.WHISPER:
+        return this.whisperMsg();
       default:
         return this.msg;
     }

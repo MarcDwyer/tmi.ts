@@ -5,34 +5,38 @@ import { Channel } from "./channel.ts";
 import {
   SecureIrcUrl,
   TwitchCreds,
-  MessageTypes,
+  Commands,
+  TwitchMessage,
 } from "./twitch_data.ts";
 
 import {
   isAuthMsg,
-  isPing,
 } from "./message_handlers.ts";
-import { getChannelName } from "./util.ts";
+import { getChannelName, findChannelName } from "./util.ts";
 import { msgParcer } from "./parser.ts";
 import { FormatMessages } from "./format_messages.ts";
+import {
+  Deferred,
+  deferred,
+} from "https://deno.land/std@0.65.0/async/deferred.ts";
 
-/**
- * TwitchChat processes message in async generator then passes down to channel generators
- *        TwitchChat 
- *             |
- * Channel - Channel - Channel
- */
-export type MessagePayload = {
-  type: MessageTypes;
-  channel: string;
-  payload: any;
-};
 export class TwitchChat {
+  /**
+   * WebSocket connection to twitch
+   */
   ws: WebSocket | null = null;
+  /**
+   * All of the channels you are conneted to
+   */
   channels = new Map<string, Channel>();
+
+  private signal: Deferred<TwitchMessage> = deferred();
 
   constructor(public twitchCred: TwitchCreds) {}
 
+  /**
+   * Connect to Twitch's IRC
+   */
   connect() {
     return new Promise<string>((res, rej) => {
       if (this.ws && !this.ws.isClosed) {
@@ -41,23 +45,37 @@ export class TwitchChat {
       }
       const ws = new WebSocket(SecureIrcUrl);
       ws.on("message", (msg: string) => {
-        //  const args = msg.match(/\S+/g);
         const tmsg = msgParcer(msg);
-        console.log({ tmsg, msg });
-        if (tmsg && tmsg.channel && tmsg.command) {
-          const chan = this.channels.get(tmsg.channel);
-          if (!chan) {
-            console.log(tmsg);
-
-            console.error(`Couldnt find: ${tmsg.channel}, ${tmsg.command}`);
-            return;
-          }
-          if (tmsg.command in MessageTypes) {
-            const formatted = new FormatMessages(
-              this.twitchCred.userName,
-              tmsg,
-            ).format();
-            chan.resolveSignal(formatted);
+        if (tmsg) {
+          const formatted = new FormatMessages(this.twitchCred.userName, tmsg)
+            .format();
+          switch (tmsg.command) {
+            case Commands.PING:
+              this.ws?.send("PONG :tmi.twitch.tv");
+              break;
+            case Commands.WHISPER:
+              this.signal.resolve(formatted as TwitchMessage);
+              break;
+            default:
+              if (tmsg.command in Commands) {
+                let chan = this.channels.get(tmsg.channel);
+                if (!chan) {
+                  const tryAgain = findChannelName(tmsg.channel);
+                  if (this.channels.has(tryAgain)) {
+                    console.log(`Tried again: ${tryAgain}`);
+                    chan = this.channels.get(tryAgain);
+                    tmsg.channel = tryAgain;
+                  } else {
+                    console.error(
+                      `Couldnt find: ${tmsg.channel}, ${tmsg.command}`,
+                    );
+                    return;
+                  }
+                }
+                chan?.resolveSignal(formatted);
+              } else {
+                console.log(`Unknown command: ${tmsg.command}`);
+              }
           }
         }
 
@@ -74,10 +92,6 @@ export class TwitchChat {
               ws.close();
               rej(msg);
           }
-          return;
-        }
-        if (isPing(msg)) {
-          ws.send("PONG :tmi.twitch.tv");
           return;
         }
       });
@@ -106,15 +120,18 @@ export class TwitchChat {
       ) {
         throw "Connect before joining";
       }
-      await this.ws.send(`JOIN ${chan}`);
       const c = new Channel(chan, this);
       this.channels.set(chan, c);
+      this.ws.send(`JOIN ${chan}`);
       return c;
     } catch (err) {
       console.error(err);
       return err;
     }
   }
+  /**
+   * Parts all of connected channels and cleans up all promises
+   */
   async exit(): Promise<string | void> {
     try {
       if (!this.ws) throw "Websocket connected hasnt been established yet";
@@ -126,5 +143,20 @@ export class TwitchChat {
     } catch (err) {
       return err;
     }
+  }
+  /**
+   * Listen to commands that are outside the scope of a Channel
+   * such as private whispers
+   */
+  async *whisperMsgs() {
+    while (this.ws) {
+      const globalmsg = await this.signal;
+      yield globalmsg;
+      this.signal = deferred();
+    }
+  }
+
+  [Symbol.asyncIterator](): AsyncIterableIterator<TwitchMessage> {
+    return this.whisperMsgs();
   }
 }
