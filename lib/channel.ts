@@ -28,13 +28,21 @@ export class Channel {
   clearMsg = this.msgGen<TwitchMessage>(Commands.CLEARMSG);
 
   constructor(public chanName: string, private tc: TwitchChat) {}
-
+  /**
+ * 
+ * Send a message to the channel
+ */
   async send(msg: string) {
     const { ws } = this.tc;
-    if (!ws) throw new Error("No ws connection has been made");
+    if (!ws || !this.isConnected) {
+      throw new Error("No ws connection has been made");
+    }
     const query = `PRIVMSG ${this.chanName} :${msg}`;
     await ws.send(query);
   }
+  /**
+   * Leave the channel
+   */
   async part() {
     const { ws } = this.tc;
     try {
@@ -50,12 +58,12 @@ export class Channel {
     return this.chanName.slice(1, this.chanName.length);
   }
   resolveSignal(msg: FormattedMessage) {
-    if (!msg.command) {
-      throw new Error(`Could not find ${msg.command} in signal map`);
-    }
     const signal = this.signals.get(msg.command);
     signal?.resolve(msg);
   }
+  /**
+   * @returns an async generator for the purpose of listening to Twitch's irc events
+   */
   private msgGen<T>(type: KeyOfCommands) {
     let isConnected = this.isConnected;
     const reset = () => {
