@@ -22,7 +22,7 @@ const tc = new TwitchChat({ userName, clientId, oauth });
 
 const channel = await tc.joinChannel("xqc");
 
-const handlePrivMsg = (async = (chanel: Channel) => {
+const handlePrivMsg = async (chanel: Channel) => {
   for await (const pMsg of channel.privMsg()) {
     // do something with msg here
     if (pMsg.directMsg) {
