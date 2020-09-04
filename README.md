@@ -55,7 +55,7 @@ tc.exit();
 Allows you to connect to Twitch's chat, listen to private whispers and more
 
 - `.connect()`
-  Connects to Twitch's secure WebSocket endpoint wss://irc-ws.chat.twitch.tv:443.
+  Connects to Twitch's secure WebSocket endpoint `wss://irc-ws.chat.twitch.tv:443`.
   Returns a promise that resolves when the user has correctly authenticated else it rejects.
 
 - `.joinChannel(channel: string)`
@@ -81,4 +81,63 @@ await tc.connect();
 for await (const whisper of tc) {
   //do something with whisper
 }
+```
+
+### Channel
+
+Listen to specific events of a channel or part it (leave the channel).
+
+- `.send(message: string)`
+  Send a message to the channels chat.
+
+- `.part()`
+  Leave the channel, deletes itself from channels Map in TwitchChat, and resolves all of its promises in event loop.
+
+- `.channelOwnerName: string`
+  Returns the username of the owner of the chat. For example, if I join "ninja" chat, it will return "ninja".
+
+- `.privMsg(), joinMsg(), roomStageMsg(), clearChatMsg(), clearMsg()`
+  These are all async generators. Use them in order to listen to messages and events of the chat's channel.
+  The naming of these generators match Irc and Twitch's commands. To read more about this visit `https://dev.twitch.tv/docs/irc/commands`
+
+An example of visiting a single channel
+
+```typescript
+const tc = new TwitchChat({ clientId, oauth, userName });
+
+await tc.connect();
+
+const channel await tc.joinChannel("ninja");
+
+// Private messages are just messages of users talking in the chat.
+
+for await (const pMsg of channel.privMsg()) {
+  //do something with whisper
+}
+```
+
+An example of joining multiple channels
+
+```typescript
+async function handlePrivMsg(channel: Channel) {
+  for await (const pMsg of channel.privMsg()) {
+    // do something wwith private message
+  }
+}
+async function handleClearChatMsg(channel: Channel) {
+  for await (const ccMsg of channel.clearChatMsg()) {
+    console.log(`${ccMsg.username} got banned!`);
+  }
+}
+const tc = new TwitchChat({ clientId, oauth, userName });
+
+await tc.connect();
+
+const channels: string[] = ["xqc", "ninja", "kitboga"];
+
+await Promise.allSettled(
+  channels.map(async (chan) => {
+    const channel = await tc.joinChannel(chan);
+  })
+);
 ```
