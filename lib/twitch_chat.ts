@@ -62,7 +62,6 @@ export class TwitchChat {
                 if (!chan) {
                   const tryAgain = findChannelName(tmsg.channel);
                   if (this.channels.has(tryAgain)) {
-                    console.log(`Tried again: ${tryAgain}`);
                     chan = this.channels.get(tryAgain);
                     tmsg.channel = tryAgain;
                   } else {
@@ -73,8 +72,6 @@ export class TwitchChat {
                   }
                 }
                 chan?.resolveSignal(formatted);
-              } else {
-                console.log(`Unknown command: ${tmsg.command}`);
               }
           }
         }
