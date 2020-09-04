@@ -22,31 +22,20 @@ const tc = new TwitchChat({ userName, clientId, oauth });
 
 const channel = await tc.joinChannel("xqc");
 
-const handlePrivMsg = async (c: Channel) => {
-  for await (const pmsg of c.privMsg()) {
-    //do something with PRIVMSG here
-    if (pmsg.directMsg) c.send(`@${pmsg.userName} Hey you direct messaged me!`);
+const handlePrivMsg = (async = (chanel: Channel) => {
+  for await (const pMsg of channel.privMsg()) {
+    // do something with msg here
+    if (pMsg.directMsg) {
+      console.log(`I've been direct messaged by: ${pmsg.username}`);
+    }
   }
-};
+});
 
-channelListener(channel);
+// Do not await this as it will block the call stack, instead throw it in the event loop.
+handlePrivMsg(channel);
 
-// Listen to multiple channels
-
-const channels: string[] = ["xqc", "sodapoppin", "ninja"];
-
-// Join all Channels
-await Promise.allSettled(
-  channels.map(async (channel) => {
-    const c = await tc.joinChannel(channel);
-    await c.send("Hello I've joined the channel");
-    handlePrivMsg(c);
-  })
-);
-// Run code here if you want to do something after joining channels;
-console.log("Finished joining all channels");
-// Wait 10 minutes then close TwitchChat connection
 await delay(60000);
+
 tc.exit();
 ```
 
