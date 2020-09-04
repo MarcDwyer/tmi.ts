@@ -147,6 +147,8 @@ const channels: string[] = ["xqc", "ninja", "kitboga"];
 await Promise.allSettled(
   channels.map(async (chan) => {
     const channel = await tc.joinChannel(chan);
+    handlePrivMsg(channel);
+    handleClearChatMsg(channel);
   })
 );
 ```
