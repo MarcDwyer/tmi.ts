@@ -12,7 +12,7 @@ tmi.ts allows you to create bots and automate tasks in a users Twitch Chat.
 2. Twitch Client ID
 3. Your Twitch username in lower-case
 
-### Example
+## Quick Example
 
 ```typescript
 import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
@@ -22,8 +22,8 @@ const tc = new TwitchChat({ userName, clientId, oauth });
 
 const channel = await tc.joinChannel("xqc");
 
-const channelListener = async (c: Channel) => {
-  for await (const pmsg of c) {
+const handlePrivMsg = async (c: Channel) => {
+  for await (const pmsg of c.privMsg()) {
     //do something with PRIVMSG here
     if (pmsg.directMsg) c.send(`@${pmsg.userName} Hey you direct messaged me!`);
   }
@@ -40,7 +40,7 @@ await Promise.allSettled(
   channels.map(async (channel) => {
     const c = await tc.joinChannel(channel);
     await c.send("Hello I've joined the channel");
-    channelListener(c);
+    handlePrivMsg(c);
   })
 );
 // Run code here if you want to do something after joining channels;
@@ -48,4 +48,37 @@ console.log("Finished joining all channels");
 // Wait 10 minutes then close TwitchChat connection
 await delay(60000);
 tc.exit();
+```
+
+### TwitchChat
+
+Allows you to connect to Twitch's chat, listen to private whispers and more
+
+- `.connect()`
+  Connects to Twitch's secure WebSocket endpoint wss://irc-ws.chat.twitch.tv:443.
+  Returns a promise that resolves when the user has correctly authenticated else it rejects.
+
+- `.joinChannel(channel: string)`
+  Joins the channel that it's given as a parameter.
+  Returns a promise.
+
+- `.exit()`
+  Parts all channels that have been joined, cleans up everything in the Event Loop
+  and closes connection to Twitch's websocket.
+
+- `channels: Map<string, Channel>`
+  A Map for all channels that are currently joined.
+  If a channel is parted it will also delete itself from this Map.
+
+- `[Symbol.asyncIterator](): AsyncIterableIterator<TwitchMessage>`
+  Listen to messages outsite of the scope of a channel for example a whisper (personal message).
+
+```typescript
+const tc = new TwitchChat({ clientId, oauth, userName });
+
+await tc.connect();
+
+for await (const whisper of tc) {
+  //do something with whisper
+}
 ```
