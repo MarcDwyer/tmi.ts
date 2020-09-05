@@ -57,7 +57,7 @@ export class Channel {
     const { ws } = this.tc;
     try {
       if (!ws) throw "No ws connection has been made";
-      await ws.send(`PART #${this.chanName}`);
+      await ws.send(`PART ${this.chanName}`);
       this.tc.channels.delete(this.chanName);
       this.isConnected = false;
     } catch (err) {
