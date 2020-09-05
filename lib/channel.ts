@@ -12,6 +12,9 @@ import {
   Deferred,
 } from "https://deno.land/std@0.64.0/async/deferred.ts";
 
+import { TwitchCommands } from "./twitch_commands.ts";
+import { WebSocket } from "https://deno.land/x/websocket@v0.0.3/lib/websocket.ts";
+
 export type EventFunc = (msg: any) => void;
 export type DeferredPayload = {
   type: string;
@@ -21,13 +24,19 @@ export class Channel {
   private isConnected: boolean = true;
   private signals = new Map<string, Deferred<any>>();
 
+  commands: TwitchCommands;
+
   privMsg = this.msgGen<PrivateMessage>(Commands.PRIVMSG);
   joinMsg = this.msgGen<JoinMessage>(Commands.JOIN);
   roomStageMsg = this.msgGen<TwitchMessage>(Commands.ROOMSTATE);
   clearChatMsg = this.msgGen<TwitchMessage>(Commands.CLEARCHAT);
   clearMsg = this.msgGen<TwitchMessage>(Commands.CLEARMSG);
+  userNoticeMsg = this.msgGen<TwitchMessage>(Commands.USERNOTICE);
+  userStateMsg = this.msgGen<TwitchMessage>(Commands.USERSTATE);
 
-  constructor(public chanName: string, private tc: TwitchChat) {}
+  constructor(private chanName: string, private tc: TwitchChat) {
+    this.commands = new TwitchCommands(chanName, this.tc.ws as WebSocket);
+  }
   /**
  * 
  * Send a message to the channel
@@ -43,6 +52,7 @@ export class Channel {
   /**
    * Leave the channel
    */
+
   async part() {
     const { ws } = this.tc;
     try {
@@ -54,7 +64,7 @@ export class Channel {
       console.log(err);
     }
   }
-  get channelOwnerName() {
+  get channelName() {
     return this.chanName.slice(1, this.chanName.length);
   }
   resolveSignal(msg: FormattedMessage) {
