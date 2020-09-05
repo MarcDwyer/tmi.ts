@@ -93,6 +93,11 @@ Listen to specific events of a channel or part it (leave the channel).
 
   Returns the username of the owner of the chat. For example, if I join "ninja" chat, it will return "ninja".
 
+- `.commands`
+
+  These are commands that can be used in a twitch chat. Note that certain commands require certain scopes in your oauth token `https://dev.twitch.tv/docs/irc/guide#scopes-for-irc-commands`. For more information about these commands
+  visit: `https://help.twitch.tv/s/article/chat-commands?language=en_US`
+
 - `.privMsg(), joinMsg(), roomStageMsg(), clearChatMsg(), clearMsg()`
 
   These are all async generators. Use them in order to listen to messages and events of the chat's channel.
