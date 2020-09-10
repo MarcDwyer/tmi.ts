@@ -25,6 +25,7 @@ export enum Commands {
   NONE = "NONE",
   PING = "PING",
   WHISPER = "WHISPER",
+  NOTICE = "NOTICE",
 }
 export type KeyOfCommands = keyof typeof Commands;
 type Tags = Map<string, string>;

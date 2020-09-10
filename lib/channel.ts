@@ -33,9 +33,10 @@ export class Channel {
   clearMsg = this.msgGen<TwitchMessage>(Commands.CLEARMSG);
   userNoticeMsg = this.msgGen<TwitchMessage>(Commands.USERNOTICE);
   userStateMsg = this.msgGen<TwitchMessage>(Commands.USERSTATE);
+  noticeMsg = this.msgGen<TwitchMessage>(Commands.NOTICE);
 
-  constructor(private chanName: string, private tc: TwitchChat) {
-    this.commands = new TwitchCommands(chanName, this.tc.ws as WebSocket);
+  constructor(public key: string, private tc: TwitchChat) {
+    this.commands = new TwitchCommands(key, this.tc.ws as WebSocket);
   }
   /**
  * 
@@ -46,7 +47,7 @@ export class Channel {
     if (!ws || !this.isConnected) {
       throw new Error("No ws connection has been made");
     }
-    const query = `PRIVMSG ${this.chanName} :${msg}`;
+    const query = `PRIVMSG ${this.key} :${msg}`;
     await ws.send(query);
   }
   /**
@@ -56,16 +57,16 @@ export class Channel {
   async part() {
     const { ws } = this.tc;
     try {
-      if (!ws) throw "No ws connection has been made";
-      await ws.send(`PART ${this.chanName}`);
-      this.tc.channels.delete(this.chanName);
+      if (!ws) throw "Websocket not available";
+      await ws.send(`PART ${this.key}`);
+      this.tc.channels.delete(this.key);
       this.isConnected = false;
     } catch (err) {
       console.log(err);
     }
   }
   get channelName() {
-    return this.chanName.slice(1, this.chanName.length);
+    return this.key.slice(1, this.key.length);
   }
   resolveSignal(msg: FormattedMessage) {
     const signal = this.signals.get(msg.command);

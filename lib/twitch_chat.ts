@@ -132,8 +132,9 @@ export class TwitchChat {
   async exit(): Promise<string | void> {
     try {
       if (!this.ws) throw "Websocket connected hasnt been established yet";
-      for (const channel of this.channels.values()) {
+      for (const [key, channel] of this.channels.entries()) {
         await channel.part();
+        this.channels.delete(key);
       }
       await this.ws.close();
       this.ws = null;

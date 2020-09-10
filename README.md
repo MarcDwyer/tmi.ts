@@ -24,7 +24,7 @@ const channel = await tc.joinChannel("xqc");
 
 const handlePrivMsg = async (chanel: Channel) => {
   for await (const pMsg of channel.privMsg()) {
-    // do something with msg here
+    //do something with private msg here
     if (pMsg.directMsg) {
       console.log(`I've been direct messaged by: ${pmsg.username}`);
     }
@@ -95,13 +95,13 @@ Listen to specific events of a channel or part it (leave the channel).
 
 - `.commands`
 
-  These are commands that can be used in a twitch chat. Note that certain commands require certain scopes in your oauth token `https://dev.twitch.tv/docs/irc/guide#scopes-for-irc-commands`. For more information about these commands
-  visit: `https://help.twitch.tv/s/article/chat-commands?language=en_US`
+  These are commands that can be used in a twitch chat. Note that certain commands require certain [scopes](https://dev.twitch.tv/docs/irc/guide#scopes-for-irc-commands) in your oauth token `. For more information about these commands
+  visit: [twitch's docs](https://help.twitch.tv/s/article/chat-commands?language=en_US)
 
 - `.privMsg(), joinMsg(), roomStageMsg(), clearChatMsg(), clearMsg()`
 
   These are all async generators. Use them in order to listen to messages and events of the chat's channel.
-  The naming of these generators match Irc and Twitch's commands. To read more about this visit `https://dev.twitch.tv/docs/irc/commands`
+  The naming of these generators match Irc and Twitch's [commands](https://dev.twitch.tv/docs/irc/commands).
 
 An example of visiting a single channel
 

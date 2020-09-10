@@ -9,45 +9,47 @@ export class TwitchCommands {
 
   /**
    * 
-   * @param color can be hex value of "yello" | "red"
+   * @param color can be hex value of "yellow" | "red"
    */
-  async color(color: string) {
-    this.ws.send(`PRIVMSG ${this.channel} :/color ${color}`);
+  color(color: string) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/color ${color}`);
   }
-  async ban(username: string) {
-    this.ws.send(`PRIVMSG ${this.channel} :/ban ${username}`);
+  ban(username: string) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/ban ${username}`);
   }
-  async unban(username: string) {
-    this.ws.send(`PRIVMSG ${this.channel} :/unban ${username}`);
+  unban(username: string) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/unban ${username}`);
   }
   /**
    * 
    * @param time in seconds
    */
-  async commercial(time: number) {
-    this.ws.send(`PRIVMSG ${this.channel} :/commercial ${time}`);
+  commercial(time: number) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/commercial ${time}`);
   }
-  async mods() {
-    this.ws.send(`PRIVMSG ${this.channel} :/mods`);
+  mods() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/mods`);
   }
-  async vips() {
-    this.ws.send(`PRIVMSG ${this.channel} :/vips`);
+  vips() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/vips`);
   }
-  async block(username: string) {
-    this.ws.send(`PRIVMSG ${this.channel} :/block ${username}`);
+  block(username: string) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/block ${username}`);
   }
-  async unblock(username: string) {
-    this.ws.send(`PRIVMSG ${this.channel} :/block ${username}`);
+  unblock(username: string) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/block ${username}`);
   }
-  async whisper(username: string, msg: string) {
-    this.ws.send(`PRIVMSG ${this.channel} :/w ${username} ${msg}`);
+  whisper(username: string, msg: string) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/w ${username} ${msg}`);
   }
   /**
    * 
    * @param time in seconds
    */
-  async timeout(username: string, time: number) {
-    this.ws.send(`PRIVMSG ${this.channel} :/timeout ${username} ${time}`);
+  timeout(username: string, time: number) {
+    return this.ws.send(
+      `PRIVMSG ${this.channel} :/timeout ${username} ${time}`,
+    );
   }
   /**
    * 
@@ -63,31 +65,31 @@ export class TwitchCommands {
    *  Restrict your chat to all of some of your followers
    * @param time an example would be "30 minutes" or "30m"
    */
-  async followers(time?: string) {
-    this.ws.send(`PRIVMSG ${this.channel} :/followers ${time || ""}`);
+  followers(time?: string) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/followers ${time || ""}`);
   }
-  async followersOff() {
-    this.ws.send(`PRIVMSG ${this.channel} :/followersoff`);
+  followersOff() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/followersoff`);
   }
-  async subscribers() {
-    this.ws.send(`PRIVMSG ${this.channel} :/subscribers`);
+  subscribers() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/subscribers`);
   }
-  async subscribersOff() {
-    this.ws.send(`PRIVMSG ${this.channel} :/subscribersoff`);
+  subscribersOff() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/subscribersoff`);
   }
-  async clear() {
-    this.ws.send(`PRIVMSG ${this.channel} :/clear`);
+  clear() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/clear`);
   }
-  async uniqueChat() {
-    this.ws.send(`PRIVMSG ${this.channel} :/uniquechat`);
+  uniqueChat() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/uniquechat`);
   }
-  async uniqueChatOff() {
-    this.ws.send(`PRIVMSG ${this.channel} :/uniquechatoff`);
+  uniqueChatOff() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/uniquechatoff`);
   }
-  async raid(channel: string) {
-    this.ws.send(`PRIVMSG ${this.channel} :/raid ${channel}`);
+  raid(channel: string) {
+    return this.ws.send(`PRIVMSG ${this.channel} :/raid ${channel}`);
   }
-  async unRaid() {
-    this.ws.send(`PRIVMSG ${this.channel} :/unraid`);
+  unRaid() {
+    return this.ws.send(`PRIVMSG ${this.channel} :/unraid`);
   }
 }
