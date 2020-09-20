@@ -13,7 +13,6 @@ import {
 } from "https://deno.land/std@0.64.0/async/deferred.ts";
 
 import { TwitchCommands } from "./twitch_commands.ts";
-import { WebSocket } from "https://deno.land/x/websocket@v0.0.3/lib/websocket.ts";
 
 export type EventFunc = (msg: any) => void;
 export type DeferredPayload = {
@@ -42,28 +41,24 @@ export class Channel {
  * 
  * Send a message to the channel
  */
-  async send(msg: string) {
+  send(msg: string) {
     const { ws } = this.tc;
     if (!ws || !this.isConnected) {
       throw new Error("No ws connection has been made");
     }
     const query = `PRIVMSG ${this.key} :${msg}`;
-    await ws.send(query);
+    ws.send(query);
   }
   /**
    * Leave the channel
    */
 
-  async part() {
+  part() {
     const { ws } = this.tc;
-    try {
-      if (!ws) throw "Websocket not available";
-      await ws.send(`PART ${this.key}`);
-      this.tc.channels.delete(this.key);
-      this.isConnected = false;
-    } catch (err) {
-      console.log(err);
-    }
+    if (!ws) throw "Websocket not available";
+    ws.send(`PART ${this.key}`);
+    this.tc.channels.delete(this.key);
+    this.isConnected = false;
   }
   get channelName() {
     return this.key.slice(1, this.key.length);

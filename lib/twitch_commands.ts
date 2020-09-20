@@ -1,5 +1,3 @@
-import { WebSocket } from "https://deno.land/x/websocket@v0.0.3/lib/websocket.ts";
-
 /**
  * For more details on what these commands do visit:
  * https://help.twitch.tv/s/article/chat-commands?language=en_US

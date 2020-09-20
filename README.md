@@ -20,7 +20,7 @@ import { delay } from "https://deno.land/std@0.64.0/async/delay.ts";
 
 const tc = new TwitchChat({ userName, clientId, oauth });
 
-const channel = await tc.joinChannel("xqc");
+const channel = tc.joinChannel("xqc");
 
 const handlePrivMsg = async (chanel: Channel) => {
   for await (const pMsg of channel.privMsg()) {
@@ -65,7 +65,7 @@ Allows you to connect to Twitch's chat, listen to private whispers and more
 
 - `[Symbol.asyncIterator](): AsyncIterableIterator<TwitchMessage>`
 
-  Listen to messages outsite of the scope of a channel for example a whisper (personal message).
+  Listen to whispers.
 
 ```typescript
 const tc = new TwitchChat({ clientId, oauth, userName });
@@ -110,7 +110,7 @@ const tc = new TwitchChat({ clientId, oauth, userName });
 
 await tc.connect();
 
-const channel await tc.joinChannel("ninja");
+const channel = tc.joinChannel("ninja");
 
 // Private messages are just messages of users talking in the chat.
 
@@ -138,11 +138,8 @@ await tc.connect();
 
 const channels: string[] = ["xqc", "ninja", "kitboga"];
 
-await Promise.allSettled(
-  channels.map(async (chan) => {
-    const channel = await tc.joinChannel(chan);
-    handlePrivMsg(channel);
-    handleClearChatMsg(channel);
-  })
-);
+for (const channelName of channels) {
+  const channel = tc.joinChannel(channelName);
+  channel.send(`Joined ${channelName}'s channel`);
+}
 ```

@@ -1,7 +1,6 @@
 export const SecureIrcUrl = "wss://irc-ws.chat.twitch.tv:443";
 
 export type TwitchCreds = {
-  clientId: string;
   userName: string;
   oauth: string;
 };
@@ -26,6 +25,7 @@ export enum Commands {
   PING = "PING",
   WHISPER = "WHISPER",
   NOTICE = "NOTICE",
+  "001" = "001",
 }
 export type KeyOfCommands = keyof typeof Commands;
 type Tags = Map<string, string>;

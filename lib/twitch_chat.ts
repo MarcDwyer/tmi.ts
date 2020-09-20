@@ -1,6 +1,3 @@
-import {
-  WebSocket,
-} from "https://deno.land/x/websocket/mod.ts";
 import { Channel } from "./channel.ts";
 import {
   SecureIrcUrl,
@@ -8,10 +5,6 @@ import {
   Commands,
   TwitchMessage,
 } from "./twitch_data.ts";
-
-import {
-  isAuthMsg,
-} from "./message_handlers.ts";
 import { getChannelName, findChannelName } from "./util.ts";
 import { msgParcer } from "./parser.ts";
 import { FormatMessages } from "./format_messages.ts";
@@ -39,23 +32,44 @@ export class TwitchChat {
    */
   connect() {
     return new Promise<string>((res, rej) => {
-      if (this.ws && !this.ws.isClosed) {
+      if (this.ws && this.ws.readyState !== this.ws.CLOSED) {
         rej("Websocket connection has already been established");
         return;
       }
       const ws = new WebSocket(SecureIrcUrl);
-      ws.on("message", (msg: string) => {
-        const tmsg = msgParcer(msg);
+
+      ws.onopen = () => {
+        try {
+          ws.send(
+            `PASS oauth:${this.twitchCred.oauth}`,
+          );
+          ws.send(`NICK ${this.twitchCred.userName}`);
+          this.ws = ws;
+        } catch (err) {
+          if (typeof err !== "string") err = JSON.stringify(err);
+          rej(err);
+        }
+      };
+      ws.onmessage = (msg) => {
+        const tmsg = msgParcer(msg.data);
         if (tmsg) {
           const formatted = new FormatMessages(this.twitchCred.userName, tmsg)
             .format();
           switch (tmsg.command) {
             case Commands.PING:
-              this.ws?.send("PONG :tmi.twitch.tv");
+              ws.send("PONG :tmi.twitch.tv");
               break;
             case Commands.WHISPER:
               this.signal.resolve(formatted as TwitchMessage);
               break;
+            case Commands["001"]:
+              res(msg.data);
+              break;
+            case Commands.NOTICE:
+              if (tmsg.raw.includes("failed")) {
+                rej(tmsg.raw);
+                return;
+              }
             default:
               if (tmsg.command in Commands) {
                 let chan = this.channels.get(tmsg.channel);
@@ -75,45 +89,14 @@ export class TwitchChat {
               }
           }
         }
-
-        const [authMsg, isSucc] = isAuthMsg(msg);
-        if (authMsg) {
-          switch (isSucc) {
-            case true:
-              this.ws?.send(
-                "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership",
-              );
-              res(msg);
-              break;
-            case false:
-              ws.close();
-              rej(msg);
-          }
-          return;
-        }
-      });
-
-      ws.on("ping", (p: any) => ws.send(p || new Uint8Array(0xA)));
-
-      ws.on("open", async () => {
-        try {
-          await ws.send(
-            `PASS oauth:${this.twitchCred.oauth}`,
-          );
-          await ws.send(`NICK ${this.twitchCred.userName}`);
-          this.ws = ws;
-        } catch (err) {
-          if (typeof err !== "string") err = JSON.stringify(err);
-          rej(err);
-        }
-      });
+      };
     });
   }
-  async joinChannel(chan: string): Promise<Channel> {
+  joinChannel(chan: string): Channel {
     chan = getChannelName(chan);
     try {
       if (
-        !this.ws || this.ws && this.ws.isClosed
+        !this.ws
       ) {
         throw "Connect before joining";
       }
@@ -129,14 +112,14 @@ export class TwitchChat {
   /**
    * Parts all of connected channels and cleans up all promises
    */
-  async exit(): Promise<string | void> {
+  exit(): string | void {
     try {
       if (!this.ws) throw "Websocket connected hasnt been established yet";
       for (const [key, channel] of this.channels.entries()) {
-        await channel.part();
+        channel.part();
         this.channels.delete(key);
       }
-      await this.ws.close();
+      this.ws.close();
       this.ws = null;
     } catch (err) {
       return err;
