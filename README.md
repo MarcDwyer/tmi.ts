@@ -18,7 +18,7 @@ tmi.ts allows you to create bots and automate tasks in a users Twitch Chat.
 import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
 import { delay } from "https://deno.land/std@0.64.0/async/delay.ts";
 
-const tc = new TwitchChat({ userName, clientId, oauth });
+const tc = new TwitchChat(oauth, username);
 
 const channel = tc.joinChannel("xqc");
 
@@ -68,7 +68,7 @@ Allows you to connect to Twitch's chat, listen to private whispers and more
   Listen to whispers.
 
 ```typescript
-const tc = new TwitchChat({ clientId, oauth, userName });
+const tc = new TwitchChat(oauth, username);
 
 await tc.connect();
 
@@ -106,7 +106,7 @@ Listen to specific events of a channel or part it (leave the channel).
 An example of visiting a single channel
 
 ```typescript
-const tc = new TwitchChat({ clientId, oauth, userName });
+const tc = new TwitchChat(oauth, username);
 
 await tc.connect();
 
