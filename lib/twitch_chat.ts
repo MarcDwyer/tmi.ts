@@ -1,11 +1,6 @@
 import { Channel } from "./channel.ts";
-import {
-  SecureIrcUrl,
-  TwitchCreds,
-  Commands,
-  TwitchMessage,
-} from "./twitch_data.ts";
-import { getChannelName, findChannelName } from "./util.ts";
+import { Commands, SecureIrcUrl, TwitchMessage } from "./twitch_data.ts";
+import { findChannelName, getChannelName } from "./util.ts";
 import { msgParcer } from "./parser.ts";
 import { FormatMessages } from "./format_messages.ts";
 import {
@@ -25,7 +20,7 @@ export class TwitchChat {
 
   private signal: Deferred<TwitchMessage> = deferred();
 
-  constructor(public twitchCred: TwitchCreds) {}
+  constructor(private oauth: string, private username: string) {}
 
   /**
    * Connect to Twitch's IRC
@@ -41,9 +36,9 @@ export class TwitchChat {
       ws.onopen = () => {
         try {
           ws.send(
-            `PASS oauth:${this.twitchCred.oauth}`,
+            `PASS oauth:${this.oauth}`,
           );
-          ws.send(`NICK ${this.twitchCred.userName}`);
+          ws.send(`NICK ${this.username}`);
           this.ws = ws;
         } catch (err) {
           if (typeof err !== "string") err = JSON.stringify(err);
@@ -53,7 +48,7 @@ export class TwitchChat {
       ws.onmessage = (msg) => {
         const tmsg = msgParcer(msg.data);
         if (tmsg) {
-          const formatted = new FormatMessages(this.twitchCred.userName, tmsg)
+          const formatted = new FormatMessages(this.username, tmsg)
             .format();
           switch (tmsg.command) {
             case Commands.PING:
