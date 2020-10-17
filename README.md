@@ -20,6 +20,8 @@ import { delay } from "https://deno.land/std@0.64.0/async/delay.ts";
 
 const tc = new TwitchChat(oauth, username);
 
+await tc.connect();
+
 const channel = tc.joinChannel("xqc");
 
 const handlePrivMsg = async (chanel: Channel) => {
