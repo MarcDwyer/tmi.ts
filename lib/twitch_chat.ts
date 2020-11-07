@@ -8,7 +8,7 @@ import {
   deferred,
 } from "https://deno.land/std@0.65.0/async/deferred.ts";
 
-export class TwitchChat {
+export class TwitchChat implements AsyncIterable<TwitchMessage> {
   /**
    * WebSocket connection to twitch
    */
@@ -35,9 +35,7 @@ export class TwitchChat {
 
       ws.onopen = () => {
         try {
-          ws.send(
-            `PASS oauth:${this.oauth}`,
-          );
+          ws.send(`PASS oauth:${this.oauth}`);
           ws.send(`NICK ${this.username}`);
           this.ws = ws;
         } catch (err) {
@@ -48,8 +46,7 @@ export class TwitchChat {
       ws.onmessage = (msg) => {
         const tmsg = msgParcer(msg.data);
         if (tmsg) {
-          const formatted = new FormatMessages(this.username, tmsg)
-            .format();
+          const formatted = new FormatMessages(this.username, tmsg).format();
           switch (tmsg.command) {
             case Commands.PING:
               ws.send("PONG :tmi.twitch.tv");
@@ -75,7 +72,7 @@ export class TwitchChat {
                     tmsg.channel = tryAgain;
                   } else {
                     console.error(
-                      `Couldnt find: ${tmsg.channel}, ${tmsg.command}`,
+                      `Couldnt find: ${tmsg.channel}, ${tmsg.command}`
                     );
                     return;
                   }
@@ -90,9 +87,7 @@ export class TwitchChat {
   joinChannel(chan: string): Channel {
     chan = getChannelName(chan);
     try {
-      if (
-        !this.ws
-      ) {
+      if (!this.ws) {
         throw "Connect before joining";
       }
       const c = new Channel(chan, this);
@@ -126,6 +121,9 @@ export class TwitchChat {
    */
   async *whisperMsgs() {
     while (this.ws) {
+      if (!this.ws) {
+        throw new Error("You are not connected to Twitch yet");
+      }
       const globalmsg = await this.signal;
       yield globalmsg;
       this.signal = deferred();
