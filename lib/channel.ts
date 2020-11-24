@@ -15,6 +15,7 @@ export type ChannelEvents =
   | "usernotice"
   | "clearmsg"
   | "roomstate";
+
 export type ChannelCallback = (msg: IrcMessage) => void;
 
 export class Channel {

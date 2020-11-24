@@ -58,5 +58,3 @@ export type PrivateMessage = {
   command: string;
   tags: Tags;
 };
-
-export type FormattedMessage = JoinMessage | PrivateMessage | IrcMessage;

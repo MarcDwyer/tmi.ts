@@ -32,20 +32,15 @@ export class TwitchChat {
   connect() {
     return new Promise<string>((res, rej) => {
       if (this.ws && this.ws.readyState !== this.ws.CLOSED) {
-        rej("Websocket connection has already been established");
+        rej(new Error("Websocket connection has already been established"));
         return;
       }
       const ws = new WebSocket(SecureIrcUrl);
 
       ws.onopen = () => {
-        try {
-          ws.send(`PASS oauth:${this.oauth}`);
-          ws.send(`NICK ${this.username}`);
-          this.ws = ws;
-        } catch (err) {
-          if (typeof err !== "string") err = JSON.stringify(err);
-          rej(err);
-        }
+        ws.send(`PASS oauth:${this.oauth}`);
+        ws.send(`NICK ${this.username}`);
+        this.ws = ws;
       };
       ws.onmessage = (msg) => {
         const tmsg = msgParcer(msg.data);
@@ -58,6 +53,12 @@ export class TwitchChat {
                 break;
               case "ping":
                 ws.send("PONG :tmi.twitch.tv");
+                break;
+              case "notice":
+                if (tmsg.raw.includes("failed")) {
+                  rej(new Error(tmsg.raw));
+                }
+                break;
             }
             //@ts-ignore
             const isGlobalCmd: TwitchChatCallback | null = this.cbs[lCmd];
@@ -76,21 +77,16 @@ export class TwitchChat {
   }
   joinChannel(chan: string): Channel {
     chan = getChannelName(chan);
-    try {
-      if (!this.ws) {
-        throw "Connect before joining";
-      }
-      const c = new Channel(chan, this);
-      this.channels.set(chan, c);
-      this.ws.send(`JOIN ${chan}`);
-      return c;
-    } catch (err) {
-      console.error(err);
-      return err;
+    if (!this.ws) {
+      throw new Error("Connect before joining");
     }
+    const c = new Channel(chan, this);
+    this.channels.set(chan, c);
+    this.ws.send(`JOIN ${chan}`);
+    return c;
   }
   /**
-   * Parts all of connected channels and cleans up all promises
+   * Parts all of connected channels disconnects from Twitch's Chat
    */
   exit(): string | void {
     try {
