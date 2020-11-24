@@ -1,4 +1,4 @@
-import { TwitchMessage } from "./twitch_data.ts";
+import { IrcMessage } from "./twitch_data.ts";
 
 export function getChannelName(channel: string) {
   channel = channel.toLowerCase();
@@ -16,14 +16,14 @@ export function isMatch(str: string, arry: string[]) {
   }
   return false;
 }
-export function deleteEmptyKeys(r: TwitchMessage) {
+export function deleteEmptyKeys(r: IrcMessage) {
   for (const [k, v] of Object.entries(r)) {
     let del: boolean = false;
     if (Array.isArray(v) && !v.length) {
       del = true;
     } else if (v instanceof Map && v.size === 0) {
       del = true;
-    } else if (!v || typeof v === "string" && !v.length) {
+    } else if (!v || (typeof v === "string" && !v.length)) {
       del = true;
     }
     //@ts-ignore

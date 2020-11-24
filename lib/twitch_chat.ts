@@ -1,14 +1,13 @@
 import { Channel } from "./channel.ts";
-import { Commands, SecureIrcUrl, TwitchMessage } from "./twitch_data.ts";
-import { findChannelName, getChannelName } from "./util.ts";
+import { SecureIrcUrl, IrcMessage } from "./twitch_data.ts";
+import { getChannelName } from "./util.ts";
 import { msgParcer } from "./parser.ts";
-import { FormatMessages } from "./format_messages.ts";
-import {
-  Deferred,
-  deferred,
-} from "https://deno.land/std@0.65.0/async/deferred.ts";
 
-export class TwitchChat implements AsyncIterable<TwitchMessage> {
+type TwitchChatEvents = "001" | "whisper" | "ping" | "notice";
+
+type TwitchChatCallback = (msg: IrcMessage) => void;
+
+export class TwitchChat {
   /**
    * WebSocket connection to twitch
    */
@@ -18,7 +17,12 @@ export class TwitchChat implements AsyncIterable<TwitchMessage> {
    */
   channels = new Map<string, Channel>();
 
-  private signal: Deferred<TwitchMessage> = deferred();
+  private cbs: Record<TwitchChatEvents, TwitchChatCallback | null> = {
+    "001": null,
+    whisper: null,
+    ping: null,
+    notice: null,
+  };
 
   constructor(private oauth: string, private username: string) {}
 
@@ -46,39 +50,25 @@ export class TwitchChat implements AsyncIterable<TwitchMessage> {
       ws.onmessage = (msg) => {
         const tmsg = msgParcer(msg.data);
         if (tmsg) {
-          const formatted = new FormatMessages(this.username, tmsg).format();
-          switch (tmsg.command) {
-            case Commands.PING:
-              ws.send("PONG :tmi.twitch.tv");
-              break;
-            case Commands.WHISPER:
-              this.signal.resolve(formatted as TwitchMessage);
-              break;
-            case Commands["001"]:
-              res(msg.data);
-              break;
-            case Commands.NOTICE:
-              if (tmsg.raw.includes("failed")) {
-                rej(tmsg.raw);
-                return;
-              }
-            default:
-              if (tmsg.command in Commands) {
-                let chan = this.channels.get(tmsg.channel);
-                if (!chan) {
-                  const tryAgain = findChannelName(tmsg.channel);
-                  if (this.channels.has(tryAgain)) {
-                    chan = this.channels.get(tryAgain);
-                    tmsg.channel = tryAgain;
-                  } else {
-                    console.error(
-                      `Couldnt find: ${tmsg.channel}, ${tmsg.command}`
-                    );
-                    return;
-                  }
-                }
-                chan?.resolveSignal(formatted);
-              }
+          const lCmd = tmsg.command.toLowerCase();
+          if (lCmd in this.cbs) {
+            switch (lCmd) {
+              case "001":
+                res(msg.data);
+                break;
+              case "ping":
+                ws.send("PONG :tmi.twitch.tv");
+            }
+            //@ts-ignore
+            const isGlobalCmd: TwitchChatCallback | null = this.cbs[lCmd];
+            if (isGlobalCmd) isGlobalCmd(tmsg);
+            return;
+          }
+          const chan = this.channels.get(tmsg.channel);
+          if (chan) {
+            //@ts-ignore
+            chan.triggerCb(tmsg.command.toLowerCase(), tmsg);
+            return;
           }
         }
       };
@@ -105,9 +95,8 @@ export class TwitchChat implements AsyncIterable<TwitchMessage> {
   exit(): string | void {
     try {
       if (!this.ws) throw "Websocket connected hasnt been established yet";
-      for (const [key, channel] of this.channels.entries()) {
+      for (const channel of this.channels.values()) {
         channel.part();
-        this.channels.delete(key);
       }
       this.ws.close();
       this.ws = null;
@@ -115,22 +104,8 @@ export class TwitchChat implements AsyncIterable<TwitchMessage> {
       return err;
     }
   }
-  /**
-   * Listen to commands that are outside the scope of a Channel
-   * such as private whispers
-   */
-  async *whisperMsgs() {
-    while (this.ws) {
-      if (!this.ws) {
-        throw new Error("You are not connected to Twitch yet");
-      }
-      const globalmsg = await this.signal;
-      yield globalmsg;
-      this.signal = deferred();
-    }
-  }
 
-  [Symbol.asyncIterator](): AsyncIterableIterator<TwitchMessage> {
-    return this.whisperMsgs();
+  addEventListener(event: TwitchChatEvents, func: TwitchChatCallback) {
+    this.cbs[event] = func;
   }
 }

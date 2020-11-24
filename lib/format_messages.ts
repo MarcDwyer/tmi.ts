@@ -1,5 +1,5 @@
 import {
-  TwitchMessage,
+  IrcMessage,
   PrivateMessage,
   FormattedMessage,
   Commands,
@@ -7,7 +7,7 @@ import {
 import { removeBreaks } from "./util.ts";
 
 export class FormatMessages {
-  constructor(private clientUsername: string, private msg: TwitchMessage) {}
+  constructor(private clientUsername: string, private msg: IrcMessage) {}
 
   private privMsg() {
     const { msg } = this;
@@ -22,7 +22,7 @@ export class FormatMessages {
     };
     return pm;
   }
-  private whisperMsg(): TwitchMessage {
+  private whisperMsg(): IrcMessage {
     const message = this.msg.params[1];
     if (!message) return this.msg;
     return {

@@ -30,7 +30,7 @@ export enum Commands {
 export type KeyOfCommands = keyof typeof Commands;
 type Tags = Map<string, string>;
 
-export interface TwitchMessage {
+export interface IrcMessage {
   tags: Tags;
   directMsg: boolean;
   raw: string;
@@ -41,7 +41,7 @@ export interface TwitchMessage {
   message: string;
   username: string;
 }
-export interface ClearChatMessage extends TwitchMessage {
+export interface ClearChatMessage extends IrcMessage {
   userName: string;
 }
 export type JoinMessage = {
@@ -59,4 +59,4 @@ export type PrivateMessage = {
   tags: Tags;
 };
 
-export type FormattedMessage = JoinMessage | PrivateMessage | TwitchMessage;
+export type FormattedMessage = JoinMessage | PrivateMessage | IrcMessage;

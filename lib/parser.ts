@@ -1,4 +1,4 @@
-import { TwitchMessage, Commands } from "./twitch_data.ts";
+import { IrcMessage, Commands } from "./twitch_data.ts";
 import { removeBreaks } from "./util.ts";
 
 /*
@@ -37,11 +37,11 @@ import { removeBreaks } from "./util.ts";
 //   channel: null | string;
 // };
 /**
- * 
+ *
  * parces messages from twitch's websocket connection
  */
 export function msgParcer(data: string) {
-  const message: TwitchMessage = {
+  const message: IrcMessage = {
     raw: data,
     tags: new Map<string, string>(),
     prefix: "",
