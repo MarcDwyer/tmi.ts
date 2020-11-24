@@ -1,5 +1,6 @@
 import { TwitchChat } from "./twitch_chat.ts";
 import { IrcMessage } from "./twitch_data.ts";
+import { TwitchCommands } from "./twitch_commands.ts";
 
 export type EventFunc = (msg: any) => void;
 export type DeferredPayload = {
@@ -19,6 +20,8 @@ export type ChannelEvents =
 export type ChannelCallback = (msg: IrcMessage) => void;
 
 export class Channel {
+  commands: TwitchCommands;
+
   private isConnected: boolean = true;
 
   private cbs: Record<ChannelEvents, ChannelCallback | null> = {
@@ -31,7 +34,10 @@ export class Channel {
     roomstate: null,
   };
 
-  constructor(public key: string, private tc: TwitchChat) {}
+  constructor(public key: string, private tc: TwitchChat) {
+    //@ts-ignore
+    this.commands = new TwitchCommands(key, tc.ws);
+  }
   /**
    *
    * Send a message to the channel

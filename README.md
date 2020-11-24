@@ -22,19 +22,15 @@ const tc = new TwitchChat(oauth, username);
 
 await tc.connect();
 
-const channel = tc.joinChannel("xqc");
+const channel = tc.joinChannel("xqcow");
 
-const handlePrivMsg = async (chanel: Channel) => {
-  for await (const pMsg of channel.privMsg()) {
-    //do something with private msg here
-    if (pMsg.directMsg) {
-      console.log(`I've been direct messaged by: ${pmsg.username}`);
-    }
+channel.addEventListener("privmsg", (ircMsg) => {
+  if (ircMsg.message.contains("badword")) {
+   channel.commands.ban(ircMsg.username)
+  } else if (ircMsg.directMsg) {
+    console.log(`You have been messaged by ${ircMsg.username}`)
   }
-});
-
-// Do not await this as it will block the call stack, instead throw it in the event loop.
-handlePrivMsg(channel);
+);
 
 await delay(60000);
 
@@ -65,19 +61,10 @@ Allows you to connect to Twitch's chat, listen to private whispers and more
   A Map for all channels that are currently joined.
   If a channel is parted it will also delete itself from this Map.
 
-- `[Symbol.asyncIterator](): AsyncIterableIterator<TwitchMessage>`
+- `.addEventListener(event: TwitchChatEvents, (msg: IrcMessage) => void)`
 
-  Listen to whispers.
-
-```typescript
-const tc = new TwitchChat(oauth, username);
-
-await tc.connect();
-
-for await (const whisper of tc) {
-  //do something with whisper
-}
-```
+  Handle specific events outside the scope of a channel like, whispers, notices, and pings etc.
+  Events are specific strings which TypeScript should help you out with.
 
 ### Channel
 
@@ -100,48 +87,8 @@ Listen to specific events of a channel or part it (leave the channel).
   These are commands that can be used in a twitch chat. Note that certain commands require certain [scopes](https://dev.twitch.tv/docs/irc/guide#scopes-for-irc-commands) in your oauth token `. For more information about these commands
   visit: [twitch's docs](https://help.twitch.tv/s/article/chat-commands?language=en_US)
 
-- `.privMsg(), joinMsg(), roomStageMsg(), clearChatMsg(), clearMsg()`
+- `.addEventListener(event: ChannelEvent, (msg: IrcMsg) => void)`
 
-  These are all async generators. Use them in order to listen to messages and events of the chat's channel.
-  The naming of these generators match Irc and Twitch's [commands](https://dev.twitch.tv/docs/irc/commands).
+  Handle events such as privmsg, joins, roomstate etc.
 
-An example of visiting a single channel
-
-```typescript
-const tc = new TwitchChat(oauth, username);
-
-await tc.connect();
-
-const channel = tc.joinChannel("ninja");
-
-// Private messages are just messages of users talking in the chat.
-
-for await (const pMsg of channel.privMsg()) {
-  //do something with whisper
-}
-```
-
-An example of joining multiple channels
-
-```typescript
-async function handlePrivMsg(channel: Channel) {
-  for await (const pMsg of channel.privMsg()) {
-    // do something wwith private message
-  }
-}
-async function handleClearChatMsg(channel: Channel) {
-  for await (const ccMsg of channel.clearChatMsg()) {
-    console.log(`${ccMsg.username} got banned!`);
-  }
-}
-const tc = new TwitchChat({ clientId, oauth, userName });
-
-await tc.connect();
-
-const channels: string[] = ["xqc", "ninja", "kitboga"];
-
-for (const channelName of channels) {
-  const channel = tc.joinChannel(channelName);
-  channel.send(`Joined ${channelName}'s channel`);
-}
-```
+  **Tip: privmsg is the event which handles chat messsages**
