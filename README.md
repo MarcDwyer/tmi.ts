@@ -22,6 +22,10 @@ const tc = new TwitchChat(oauth, username);
 
 await tc.connect();
 
+tc.addEventListener("whisper", (whisper) => {
+     // Do something with whisper here
+})
+
 const channel = tc.joinChannel("xqcow");
 
 channel.addEventListener("privmsg", (ircMsg) => {
