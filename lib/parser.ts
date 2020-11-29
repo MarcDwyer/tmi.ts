@@ -40,7 +40,7 @@ import { removeBreaks } from "./util.ts";
  *
  * parces messages from twitch's websocket connection
  */
-export function msgParcer(data: string) {
+export function msgParcer(data: string, username: string) {
   const message: IrcMessage = {
     raw: data,
     tags: new Map<string, string>(),
@@ -178,6 +178,11 @@ export function msgParcer(data: string) {
   for (const c of message.prefix) {
     if (c === "!") break;
     message.username += c;
+  }
+  const lowerMsg = message.message.toLowerCase();
+  const hasName = lowerMsg.includes(username);
+  if (hasName) {
+    message.directMsg = true;
   }
   return message;
 }

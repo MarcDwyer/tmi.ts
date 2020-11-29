@@ -20,6 +20,7 @@ import { delay } from "https://deno.land/std@0.64.0/async/delay.ts";
 
 const tc = new TwitchChat(oauth, username);
 
+try {
 await tc.connect();
 
 tc.addEventListener("whisper", (whisper) => {
@@ -39,6 +40,9 @@ channel.addEventListener("privmsg", (ircMsg) => {
 await delay(60000);
 
 tc.exit();
+} catch(err) {
+console.error(err)
+}
 ```
 
 ### TwitchChat

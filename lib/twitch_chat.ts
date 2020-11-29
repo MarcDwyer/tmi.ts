@@ -17,6 +17,8 @@ export class TwitchChat {
    */
   channels = new Map<string, Channel>();
 
+  private username: string;
+
   private cbs: Record<TwitchChatEvents, TwitchChatCallback | null> = {
     "001": null,
     whisper: null,
@@ -24,7 +26,9 @@ export class TwitchChat {
     notice: null,
   };
 
-  constructor(private oauth: string, private username: string) {}
+  constructor(private oauth: string, username: string) {
+    this.username = username.toLowerCase();
+  }
 
   /**
    * Connect to Twitch's IRC
@@ -43,7 +47,7 @@ export class TwitchChat {
         this.ws = ws;
       };
       ws.onmessage = (msg) => {
-        const tmsg = msgParcer(msg.data);
+        const tmsg = msgParcer(msg.data, this.username);
         if (tmsg) {
           const lCmd = tmsg.command.toLowerCase();
           if (lCmd in this.cbs) {
