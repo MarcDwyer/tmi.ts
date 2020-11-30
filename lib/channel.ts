@@ -1,6 +1,11 @@
 import { TwitchChat } from "./twitch_chat.ts";
 import { IrcMessage } from "./twitch_data.ts";
 import { TwitchCommands } from "./twitch_commands.ts";
+import { getAsyncIter } from "./util.ts";
+import {
+  Deferred,
+  deferred,
+} from "https://deno.land/std@0.79.0/async/deferred.ts";
 
 export type EventFunc = (msg: any) => void;
 export type DeferredPayload = {
@@ -21,7 +26,7 @@ export type ChannelCallback = (msg: IrcMessage) => void;
 
 export class Channel {
   commands: TwitchCommands;
-
+  signal: null | Deferred<IrcMessage> = null;
   private isConnected: boolean = true;
 
   private cbs: Record<ChannelEvents, ChannelCallback | null> = {
@@ -59,6 +64,7 @@ export class Channel {
     if (!ws) throw "Websocket not available";
     ws.send(`PART ${this.key}`);
     this.tc.channels.delete(this.key);
+    if (this.signal) this.signal.reject();
     this.isConnected = false;
   }
   get channelName() {
@@ -73,5 +79,10 @@ export class Channel {
   }
   addEventListener(event: ChannelEvents, func: (msg: IrcMessage) => void) {
     this.cbs[event] = func;
+  }
+  [Symbol.asyncIterator](): AsyncIterableIterator<IrcMessage> {
+    this.signal = deferred();
+    //@ts-ignore
+    return getAsyncIter<IrcMessage>(this);
   }
 }

@@ -1,6 +1,10 @@
+import {
+  Deferred,
+  deferred,
+} from "https://deno.land/std@0.79.0/async/deferred.ts";
 import { Channel } from "./channel.ts";
 import { SecureIrcUrl, IrcMessage } from "./twitch_data.ts";
-import { getChannelName } from "./util.ts";
+import { getAsyncIter, getChannelName } from "./util.ts";
 import { msgParcer } from "./parser.ts";
 
 type TwitchChatEvents = "001" | "whisper" | "ping" | "notice";
@@ -16,6 +20,7 @@ export class TwitchChat {
    * All of the channels you are conneted to
    */
   channels = new Map<string, Channel>();
+  signal: null | Deferred<IrcMessage> = null;
 
   private username: string;
 
@@ -64,6 +69,7 @@ export class TwitchChat {
                 }
                 break;
             }
+            if (this.signal) this.signal.resolve(tmsg);
             //@ts-ignore
             const isGlobalCmd: TwitchChatCallback | null = this.cbs[lCmd];
             if (isGlobalCmd) isGlobalCmd(tmsg);
@@ -71,6 +77,7 @@ export class TwitchChat {
           }
           const chan = this.channels.get(tmsg.channel);
           if (chan) {
+            if (chan.signal) chan.signal.resolve(tmsg);
             //@ts-ignore
             chan.triggerCb(tmsg.command.toLowerCase(), tmsg);
             return;
@@ -93,19 +100,22 @@ export class TwitchChat {
    * Parts all of connected channels disconnects from Twitch's Chat
    */
   exit(): string | void {
-    try {
-      if (!this.ws) throw "Websocket connected hasnt been established yet";
-      for (const channel of this.channels.values()) {
-        channel.part();
-      }
-      this.ws.close();
-      this.ws = null;
-    } catch (err) {
-      return err;
+    if (!this.ws)
+      throw new Error("Websocket connected hasnt been established yet");
+    for (const channel of this.channels.values()) {
+      channel.part();
     }
+    if (this.signal) this.signal.reject();
+    this.ws.close();
+    this.ws = null;
   }
 
   addEventListener(event: TwitchChatEvents, func: TwitchChatCallback) {
     this.cbs[event] = func;
+  }
+  [Symbol.asyncIterator](): AsyncIterableIterator<IrcMessage> {
+    this.signal = deferred();
+    //@ts-ignore
+    return getAsyncIter<IrcMessage>(this);
   }
 }

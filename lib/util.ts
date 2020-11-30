@@ -1,35 +1,12 @@
-import { IrcMessage } from "./twitch_data.ts";
+import {
+  Deferred,
+  deferred,
+} from "https://deno.land/std@0.79.0/async/deferred.ts";
 
 export function getChannelName(channel: string) {
   channel = channel.toLowerCase();
   if (channel[0] !== "#") channel = "#" + channel;
   return channel;
-}
-
-export function testStr(msg: string) {
-  return msg.split("\r\n");
-}
-
-export function isMatch(str: string, arry: string[]) {
-  for (const s of arry) {
-    if (str === s) return true;
-  }
-  return false;
-}
-export function deleteEmptyKeys(r: IrcMessage) {
-  for (const [k, v] of Object.entries(r)) {
-    let del: boolean = false;
-    if (Array.isArray(v) && !v.length) {
-      del = true;
-    } else if (v instanceof Map && v.size === 0) {
-      del = true;
-    } else if (!v || (typeof v === "string" && !v.length)) {
-      del = true;
-    }
-    //@ts-ignore
-    if (del) delete r[k];
-  }
-  return r;
 }
 
 export function removeBreaks(s: string) {
@@ -43,4 +20,18 @@ export function findChannelName(str: string) {
     chan += char;
   }
   return chan;
+}
+interface MySignal<T> {
+  signal: Deferred<T>;
+}
+export async function* getAsyncIter<T>(o: MySignal<T>) {
+  while (true) {
+    try {
+      const data = await o.signal;
+      yield data;
+      o.signal = deferred();
+    } catch (_) {
+      break;
+    }
+  }
 }

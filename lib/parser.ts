@@ -184,5 +184,6 @@ export function msgParcer(data: string, username: string) {
   if (hasName) {
     message.directMsg = true;
   }
+
   return message;
 }
