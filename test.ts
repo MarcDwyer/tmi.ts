@@ -48,7 +48,7 @@ Deno.test({
         tc.joinChannel(channel);
       }
       await delay(5000);
-      tc.exit();
+      tc.disconnect();
 
       assertEquals(tc.channels.size === 0, true);
       assertEquals(tc.ws === null, true);

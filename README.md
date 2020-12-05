@@ -98,7 +98,7 @@ Allows you to connect to Twitch's chat, listen to private whispers and more
   Joins the channel that it's given as a parameter.
   Returns a promise.
 
-- `.exit()`
+- `.disconnect()`
 
   Parts all channels that have been joined, cleans up everything in the Event Loop
   and closes connection to Twitch's websocket.
