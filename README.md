@@ -14,7 +14,7 @@ tmi.ts allows you to create bots and automate tasks in a users Twitch Chat.
 
 ## Quick Examples
 
-### Method One
+### Method One (Callbacks)
 
 ```typescript
 import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
@@ -47,7 +47,7 @@ console.error(err)
 }
 ```
 
-### Method Two
+### Method Two (Async Iterators)
 
 ```typescript
 import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
