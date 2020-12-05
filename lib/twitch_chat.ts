@@ -99,7 +99,7 @@ export class TwitchChat {
   /**
    * Parts all of connected channels disconnects from Twitch's Chat
    */
-  exit(): string | void {
+  disconnect(): string | void {
     if (!this.ws)
       throw new Error("Websocket connected hasnt been established yet");
     for (const channel of this.channels.values()) {

@@ -12,7 +12,9 @@ tmi.ts allows you to create bots and automate tasks in a users Twitch Chat.
 2. Twitch Client ID
 3. Your Twitch username in lower-case
 
-## Quick Example
+## Quick Examples
+
+### Method One
 
 ```typescript
 import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
@@ -39,13 +41,50 @@ channel.addEventListener("privmsg", (ircMsg) => {
 
 await delay(60000);
 
-tc.exit();
+tc.disconnect();
 } catch(err) {
 console.error(err)
 }
 ```
 
-### TwitchChat
+### Method Two
+
+```typescript
+import { TwitchChat, Channel } from "https://deno.land/x/tmi/mod.ts";
+import { delay } from "https://deno.land/std@0.64.0/async/delay.ts";
+
+const tc = new TwitchChat(oauth, username);
+
+async function listenWhispers(tc: TwitchChat) {
+  for await (const ircmsg of tc) {
+    switch (ircmsg.command) {
+      case "whisper":
+      // Do something with ircmsg here
+    }
+  }
+}
+
+async function listenChannel(c: Channel) {
+  for await (const ircmsg of c) {
+    switch (ircmsg.command) {
+      case "PRIVMSG":
+      // Do something with ircmsg here
+    }
+  }
+}
+
+try {
+  await tc.connect();
+  listenWhispers(tc);
+
+  const channel = tc.joinChannel("hasanabi");
+  listenChannel(channel);
+} catch (e) {
+  console.error(e);
+}
+```
+
+## TwitchChat
 
 Allows you to connect to Twitch's chat, listen to private whispers and more
 
