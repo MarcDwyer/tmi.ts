@@ -58,6 +58,10 @@ export class TwitchChat {
           if (lCmd in this.cbs) {
             switch (lCmd) {
               case "001":
+                ws.send(
+                  "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership"
+                );
+                this.ws = ws;
                 res(msg.data);
                 break;
               case "ping":
@@ -65,6 +69,10 @@ export class TwitchChat {
                 break;
               case "notice":
                 if (tmsg.raw.includes("failed")) {
+                  if (this.ws) {
+                    this.ws = null;
+                  }
+                  ws.close();
                   rej(new Error(tmsg.raw));
                 }
                 break;
