@@ -36,7 +36,9 @@ export class TwitchChat {
   }
 
   /**
-   * Connect to Twitch's IRC
+   * Connect to Twitch's IRC,
+   * resolves when connected & Twitch has successfully authenticated
+   * your credentials
    */
   connect() {
     return new Promise<string>((res, rej) => {
@@ -49,7 +51,6 @@ export class TwitchChat {
       ws.onopen = () => {
         ws.send(`PASS oauth:${this.oauth}`);
         ws.send(`NICK ${this.username}`);
-        this.ws = ws;
       };
       ws.onmessage = (msg) => {
         const tmsg = msgParcer(msg.data, this.username);

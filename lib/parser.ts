@@ -1,5 +1,5 @@
 import { IrcMessage, Commands } from "./twitch_data.ts";
-import { createBadgeObj, getBadges, removeBreaks } from "./util.ts";
+import { createBadgeObj, setBadges, removeBreaks } from "./util.ts";
 
 /*
 	Copyright (c) 2013-2015, Fionn Kelleher All rights reserved.
@@ -81,7 +81,7 @@ export function msgParcer(data: string, username: string) {
       var tag = rawTags[i];
       const [k, v] = tag.split("=");
       if (k === "badges") {
-        getBadges(v, message.badges);
+        setBadges(v, message.badges);
       }
       //@ts-ignore
       message.tags[k] = v;

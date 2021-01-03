@@ -42,7 +42,7 @@ export const createBadgeObj = (): Badges => ({
   turbo: false,
   moderator: false,
 });
-export function getBadges(badges: string, badgeRec: Badges) {
+export function setBadges(badges: string, badgeRec: Badges) {
   const reg = /^[a-z]+$/i;
   let badge = "";
 
