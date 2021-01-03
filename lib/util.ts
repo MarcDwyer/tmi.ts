@@ -2,6 +2,7 @@ import {
   Deferred,
   deferred,
 } from "https://deno.land/std@0.79.0/async/deferred.ts";
+import { Badges } from "./twitch_data.ts";
 
 export function getChannelName(channel: string) {
   channel = channel.toLowerCase();
@@ -32,6 +33,29 @@ export async function* getAsyncIter<T>(o: MySignal<T>) {
       o.signal = deferred();
     } catch (_) {
       break;
+    }
+  }
+}
+export const createBadgeObj = (): Badges => ({
+  subscriber: false,
+  glitchcon: false,
+  turbo: false,
+  moderator: false,
+});
+export function getBadges(badges: string, badgeRec: Badges) {
+  const reg = /^[a-z]+$/i;
+  let badge = "";
+
+  for (const char of badges) {
+    const test = reg.test(char);
+    if (test) {
+      badge += char;
+    } else {
+      if (badge.length) {
+        //@ts-ignore
+        badgeRec[badge] = true;
+      }
+      badge = "";
     }
   }
 }

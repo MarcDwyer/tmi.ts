@@ -1,5 +1,5 @@
 import { IrcMessage, Commands } from "./twitch_data.ts";
-import { removeBreaks } from "./util.ts";
+import { createBadgeObj, getBadges, removeBreaks } from "./util.ts";
 
 /*
 	Copyright (c) 2013-2015, Fionn Kelleher All rights reserved.
@@ -40,10 +40,16 @@ import { removeBreaks } from "./util.ts";
  *
  * parces messages from twitch's websocket connection
  */
+
+//ex
+// [ "badges", "moderator/1,subscriber/3012,glitchcon2020/1" ]
+
 export function msgParcer(data: string, username: string) {
   const message: IrcMessage = {
     raw: data,
-    tags: new Map<string, string>(),
+    badges: createBadgeObj(),
+    //@ts-ignore
+    tags: {},
     prefix: "",
     command: Commands.NONE,
     params: [],
@@ -74,7 +80,11 @@ export function msgParcer(data: string, username: string) {
       // If there's no equals, we assign the tag a value of true.
       var tag = rawTags[i];
       const [k, v] = tag.split("=");
-      message.tags.set(k, v);
+      if (k === "badges") {
+        getBadges(v, message.badges);
+      }
+      //@ts-ignore
+      message.tags[k] = v;
     }
 
     position = nextspace + 1;

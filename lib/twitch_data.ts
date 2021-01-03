@@ -28,12 +28,34 @@ export enum Commands {
   "001" = "001",
 }
 export type KeyOfCommands = keyof typeof Commands;
-type Tags = Map<string, string>;
+
+export type Tags = {
+  "display-name": string;
+  "room-id": string;
+  id: string;
+  color: string;
+  emotes: string;
+  mod: string;
+  flags: string;
+  subscriber: string;
+  "tmi-sent-ts": string;
+  turbo: string;
+  "user-id": string;
+  "user-type": string;
+};
+
+export type Badges = {
+  subscriber: boolean;
+  glitchcon: boolean;
+  turbo: boolean;
+  moderator: boolean;
+};
 
 export interface IrcMessage {
   tags: Tags;
   directMsg: boolean;
   raw: string;
+  badges: Badges;
   prefix: string;
   command: KeyOfCommands;
   channel: string;
