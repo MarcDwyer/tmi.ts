@@ -90,4 +90,7 @@ export class TwitchCommands {
   unRaid() {
     return this.ws.send(`PRIVMSG ${this.channel} :/unraid`);
   }
+  announce(msg: string, color: "blue" | "green" | "orange" | "purple" | "") {
+    return this.ws.send(`PRIVMSG ${this.channel} :/announce${color} ${msg}`);
+  }
 }
