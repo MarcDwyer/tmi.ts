@@ -32,12 +32,12 @@ tc.addEventListener("whisper", (whisper) => {
 const channel = tc.joinChannel("xqcow");
 
 channel.addEventListener("privmsg", (ircMsg) => {
-  if (ircMsg.message.contains("badword")) {
+  if (ircMsg.message.includes("badword")) {
    channel.commands.ban(ircMsg.username)
   } else if (ircMsg.directMsg) {
     console.log(`You have been messaged by ${ircMsg.username}`)
   }
-);
+});
 
 await delay(60000);
 
