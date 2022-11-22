@@ -114,7 +114,7 @@ export class TwitchChat {
     for (const channel of this.channels.values()) {
       channel.part();
     }
-    if (this.signal) this.signal.reject();
+    if (this.signal) this.signal.reject("Disconnect successfull");
     this.ws.close();
     this.ws = null;
   }
